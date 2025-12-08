@@ -30,12 +30,13 @@
 }
 
 .logo {
-  width: 350px;
+  width: 400px; /* Increased size */
+  margin-left: 50px; /* Moved slightly to the right */
 }
 
 .brand {
   margin-top: 20px;
-  font-size: 48px;
+  font-size: 60px; /* Increased font size */
   font-weight: bold;
 }
 
@@ -44,5 +45,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .auth-wrapper {
+    flex-direction: column;
+  }
+
+  .logo {
+    width: 300px; /* Adjusted responsive size */
+    margin-left: 0; /* Reset margin for smaller screens */
+  }
+
+  .brand {
+    font-size: 48px; /* Adjusted responsive font size */
+  }
 }
 </style>

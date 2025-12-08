@@ -14,7 +14,9 @@
         <input v-model="password" type="password" />
       </div>
 
-      <button class="login-btn">로그인</button>
+      <div class="button-container">
+        <CommonButton class="login-btn">로그인</CommonButton>
+      </div>
 
       <div class="links">
         <RouterLink to="/register">회원가입</RouterLink>
@@ -28,6 +30,7 @@
 import { ref } from "vue";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import AuthCard from "@/components/auth/AuthCard.vue";
+import CommonButton from "@/components/common/button/CommonButton.vue";
 
 const email = ref("");
 const password = ref("");
@@ -41,6 +44,7 @@ const password = ref("");
 }
 
 .field {
+  color: white;
   margin-bottom: 20px;
 }
 
@@ -50,8 +54,13 @@ input {
   border-radius: 5px;
   padding: 8px;
 }
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
 .login-btn {
-  width: 100%;
+  width: 120px;
   height: 40px;
   margin-top: 25px;
   background: #ffc933;
@@ -64,5 +73,20 @@ input {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
+}
+
+.links a {
+  color: white;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .links {
+    font-size: 12px;
+  }
 }
 </style>
