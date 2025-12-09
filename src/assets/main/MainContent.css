@@ -1,0 +1,170 @@
+/* =========================================
+   브라우저 스크롤 완전 제거
+========================================= */
+html, body {
+    height: 100%;
+    overflow: hidden; /* 🔥 화면 스크롤 절대 생성 안됨 */
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================================
+   전체 wrapper
+========================================= */
+.main-wrapper {
+    width: 100%;
+    color: #f6c749;
+
+    /* 타이틀 위 여백 제거 */
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+
+    /* 🔥 화면 전체 높이 안에 배치 */
+    height: 100vh;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   중앙 콘텐츠 wrapper
+========================================= */
+.content-center {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+
+    flex: 1; /* 화면 채우기 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* =========================================
+   메인 타이틀
+========================================= */
+.main-title {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.1;
+
+    /* 🔥 여백 축소: 화면에 페이징까지 들어가기 위해 60 → 30 */
+    margin-bottom: 30px;
+
+    color: #f6c749;
+}
+
+/* =========================================
+   Ranking 제목
+========================================= */
+.ranking-section-title {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 18px;
+    color: #f6c749;
+}
+
+/* =========================================
+   테이블 전체 박스
+========================================= */
+.ranking-table {
+    width: 100%;
+    border: 2px solid rgba(216, 167, 40, 0.5);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-sizing: border-box;
+}
+
+/* =========================================
+   랭킹 높이 (🔥 5명 기준으로 재조정)
+========================================= */
+.ranking-fixed-height {
+    height: 360px !important;
+    overflow: hidden;
+}
+/* =========================================
+   헤더 영역
+========================================= */
+.ranking-table-header {
+    display: grid;
+    grid-template-columns: 120px 1fr 200px 160px;
+    padding: 12px 0;
+    border-bottom: 2px solid rgba(216, 167, 40, 0.5);
+
+    color: #f6c749;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* =========================================
+   데이터 행
+========================================= */
+.ranking-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 200px 160px;
+    padding: 14px 0;
+    color: white;
+    font-size: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.ranking-row:last-child {
+    border-bottom: none;
+}
+
+/* 오른쪽 정렬 칼럼 */
+.right {
+    text-align: right;
+}
+
+/* =========================================
+   페이지네이션 숫자 스타일
+========================================= */
+.pagination-number {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+
+    /* 🔥 화면에 맞추기 위해 여백 축소 26 → 16 */
+    margin-top: 16px;
+
+    font-size: 22px;
+    font-weight: 700;
+    color: #f6c749;
+}
+
+/* 숫자 버튼 */
+.page-num {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.page-num:hover {
+    opacity: 1;
+}
+
+/* 현재 페이지 강조 */
+.page-num.active {
+    color: white;
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* < 또는 > */
+.page-arrow {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.page-arrow:hover {
+    opacity: 1;
+}
+
+/* 비활성화 */
+.page-arrow.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
