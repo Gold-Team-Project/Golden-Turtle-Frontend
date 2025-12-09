@@ -1,5 +1,5 @@
 <script setup>
-import Pagination from '@/components/common/Pagination.vue'
+import Pagination from '@/components/common/paging/Pagination.vue'
 
 const props = defineProps({
   title: { type: String, default: 'GameSession' },
@@ -64,7 +64,6 @@ const formatPercent = (v) => {
     <Pagination
         :page="page"
         :total-pages="totalPages"
-        :max-buttons="maxButtons"
         @change="(p) => emit('change-page', p)"
     />
   </div>

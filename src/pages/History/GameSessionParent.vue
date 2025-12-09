@@ -1,24 +1,31 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import GameSessionFrame from '@/components/GameSessionFrame.vue'
+import { fetchGameSessionsByUserId } from '@/api/HistoryApi.js'
 
 const page = ref(1)
-const totalPages = ref(10)
+const totalPages = ref(1)
+const sessions = ref([])
+const userId = 1
 
-const sessions = ref([
-  {
-    sessionId: 1,
-    startedAt: '2010-01-21 01:11',
-    endedAt: '2010-01-21 01:22',
-    finalAmount: 1000000,
-    finalReturn: 0.5,
-  },
-])
+const loadSessions = async (newPage) => {
+  try {
+    const data = await fetchGameSessionsByUserId(userId, newPage)
+    sessions.value = data.sessions
+    totalPages.value = data.totalPages
+    page.value = newPage
+  } catch (error) {
+    console.error('게임세션을 불러올수 없습니다:', error)
+  }
+}
 
 const changePage = (p) => {
-  page.value = p
-  // 여기서 API 재호출하면 됨
+  loadSessions(p)
 }
+
+onMounted(() => {
+  loadSessions(page.value)
+})
 </script>
 
 <template>
