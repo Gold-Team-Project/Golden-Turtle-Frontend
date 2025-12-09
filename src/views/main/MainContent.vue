@@ -13,7 +13,7 @@
       <h2 class="ranking-section-title">Ranking</h2>
 
       <!-- Ranking Table -->
-      <div class="ranking-table ranking-fixed-height">
+      <div class="ranking-table">
 
         <!-- Header -->
         <div class="ranking-table-header">
@@ -38,45 +38,19 @@
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-number">
-
-        <!-- 이전 버튼 -->
-        <span
-            class="page-arrow"
-            :class="{ disabled: currentPage === 1 }"
-            @click="goPrev"
-        >
-          &lt;
-        </span>
-
-        <!-- 페이지 번호들 -->
-        <span
-            v-for="page in totalPages"
-            :key="page"
-            class="page-num"
-            :class="{ active: currentPage === page }"
-            @click="goPage(page)"
-        >
-          {{ page }}
-        </span>
-
-        <!-- 다음 버튼 -->
-        <span
-            class="page-arrow"
-            :class="{ disabled: currentPage === totalPages }"
-            @click="goNext"
-        >
-          &gt;
-        </span>
-
-      </div>
+      <Pagination
+          v-model:currentPage="currentPage"
+          :total-pages="totalPages"
+      />
 
     </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from "vue"
+import Pagination from "@/components/paging/Pagination.vue"
 import "@/assets/main/MainContent.css"
 
 /* ---- 데이터 ---- */
@@ -109,16 +83,4 @@ const paginatedRows = computed(() => {
   const start = (currentPage.value - 1) * rowsPerPage
   return ranking.value.slice(start, start + rowsPerPage)
 })
-
-const goPrev = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
-
-const goNext = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const goPage = (page) => {
-  currentPage.value = page
-}
 </script>

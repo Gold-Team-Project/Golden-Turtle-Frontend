@@ -1,14 +1,13 @@
 <template>
   <aside class="sidebar-wrapper">
 
-    <!-- SECTION 1: 타이머 + 잔고 -->
     <div>
       <div class="card-panel timer-panel">
         <div class="timer-text">{{ timer }}</div>
 
         <div class="button-row">
           <CommonButton buttonClass="btn-green">시작</CommonButton>
-          <CommonButton buttonClass="btn-red">종료</CommonButton>
+          <CommonButton buttonClass="btn-red" @click="emitEnd">종료</CommonButton>
         </div>
       </div>
 
@@ -18,7 +17,6 @@
       </div>
     </div>
 
-    <!-- SECTION 2: 보유 현황 (가운데 가변 영역) -->
     <div class="sidebar-middle">
       <p class="section-title-bold">보유 현황</p>
 
@@ -34,19 +32,17 @@
             :key="item.id"
             class="holding-row"
         >
-          <div class="holding-left">
+          <div>
             <p class="holding-name">{{ item.name }}</p>
             <p class="holding-ticker">{{ item.ticker }}</p>
           </div>
 
           <p class="holding-mid">{{ item.quantity }}</p>
-
           <p class="holding-price-final">$ {{ item.avgPrice }}</p>
         </div>
       </div>
     </div>
 
-    <!-- SECTION 3: 순위 -->
     <div>
       <p class="section-title-bold">현재 순위</p>
 
@@ -56,7 +52,7 @@
             :key="rank.rank"
             class="rank-item"
         >
-          <div class="rank-left">
+          <div>
             <span v-if="rank.rank === 1">🥇</span>
             <span v-else-if="rank.rank === 2">🥈</span>
             <span v-else-if="rank.rank === 3">🥉</span>
@@ -85,9 +81,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import "@/assets/sidebar/sidebar.css"
+import { ref } from "vue"
 import CommonButton from "@/components/common/button/CommonButton.vue"
+import "@/assets/sidebar/Sidebar.css"
+
+const emit = defineEmits(["open-modal"])
 
 const timer = ref("00 : 10 : 00")
 
@@ -104,6 +102,16 @@ const ranking = ref([
   { rank: 456, nickname: "정동욱", total: "240,000" },
   { rank: 457, nickname: "야무께", total: "140,000" },
 ])
+
+const emitEnd = () => {
+  emit("open-modal", {
+    rank: 1,
+    nickname: "김폭주기관차",
+    totalAsset: 38732000,
+    returnRate: 387.32
+  })
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>
