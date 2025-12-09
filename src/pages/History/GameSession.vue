@@ -17,19 +17,41 @@
         <div class="text-wrapper-12">50%</div>
       </div>
     </div>
-    <Pagination class="pagination-instance" />
+    <Pagination />
   </div>
 </template>
 
-<script>
-import Pagination from '@/components/common/Pagination.vue';
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import TradeHistoryTable from '@/components/trade/TradeHistoryTable.vue'
+import { tradeApi } from '@/api/tradeApi'
 
-export default {
-  name: 'Frame',
-  components: {
-    Pagination
+const route = useRoute()
+const sessionId = ref(route.params.sessionId)
+
+const trades = ref([])
+const loading = ref(false)
+
+const fetchTrades = async () => {
+  loading.value = true
+  try {
+    const res = await tradeApi.listBySession(sessionId.value)
+    trades.value = res.data
+  } finally {
+    loading.value = false
   }
-};
+}
+
+onMounted(fetchTrades)
+
+watch(
+    () => route.params.sessionId,
+    (newId) => {
+      sessionId.value = newId
+      fetchTrades()
+    }
+)
 </script>
 
 <style>

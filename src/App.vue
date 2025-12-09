@@ -1,5 +1,4 @@
 <script setup>
-import GameSession from "@/pages/History/GameSession.vue";
 </script>
 
 <template>
