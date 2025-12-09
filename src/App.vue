@@ -3,8 +3,12 @@ import GameSession from "@/pages/History/GameSession.vue";
 </script>
 
 <template>
-  <GameSession/>
+  <RouterView />
 </template>
 
-<style scoped>
+<style>
+body {
+  margin: 0;
+  background-color: #1f1b13;
+}
 </style>
