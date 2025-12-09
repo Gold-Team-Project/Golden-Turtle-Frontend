@@ -24,5 +24,10 @@ export default {
   font-size: 16px;
   text-align: center;
   border: none;
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.common-button:hover {
+  background-color: #F2CA57; /* Hover background color */
 }
 </style>
