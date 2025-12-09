@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref, computed } from "vue"
-import Pagination from "@/components/paging/Pagination.vue"
+import Pagination from "@/components/common/paging/Pagination.vue"
 import "@/assets/main/MainContent.css"
 
 /* ---- 데이터 ---- */
