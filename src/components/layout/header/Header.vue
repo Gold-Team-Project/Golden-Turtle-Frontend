@@ -13,7 +13,8 @@
       <a href="/history">History</a>
       <a href="/market">Market</a>
       <a href="/portfolio">Portfolio</a>
-      <a href="/logout">Logout</a>
+      <!-- Modified logout link to trigger handleLogout function -->
+      <a @click.prevent="handleLogout" href="#">Logout</a>
     </nav>
 
   </header>
@@ -23,4 +24,11 @@
 
 <script setup>
 import "@/assets/header/Header.css"
+import { useAuthStore } from '@/stores/auth'; // New import
+
+const authStore = useAuthStore(); // Initialize auth store
+
+const handleLogout = async () => {
+  await authStore.logout();
+};
 </script>
