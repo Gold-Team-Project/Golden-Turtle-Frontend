@@ -9,20 +9,39 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
+.stock-list-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.stock-search-bar {
+    background-color: #3a3528;
+    color: #dcd2bb;
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.stock-search-bar::placeholder {
+    color: #888;
+}
+
 .stock-list-container {
-    padding: 1rem;
+    padding: 0 1rem;
 }
 
 .stock-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 1rem; /* Increased font size */
     color: #dcd2bb;
 }
 
 .stock-table th,
 .stock-table td {
-    padding: 1.25rem 1rem;
+    padding: 1.5rem 1.2rem; /* Adjusted padding */
     text-align: left;
     border-bottom: 1px solid #4a4a4a;
 }
