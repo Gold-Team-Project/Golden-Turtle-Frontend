@@ -1,123 +1,101 @@
-import axios from 'axios';
+import axios from "axios";
+import { useAuthStore } from "@/stores/auth";
 
-const instance = axios.create({
-  baseURL: 'http://localhost:8080',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 let isRefreshing = false;
+// 재시도 요청들을 저장할 배열
 let failedQueue = [];
 
+// 큐에 쌓인 요청들을 처리하는 함수
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+
+    failedQueue = [];
 };
 
-export const setAuthInterceptors = (authStore) => {
-    // Request Interceptor: Add Authorization header
-    instance.interceptors.request.use(
-        (config) => {
-            const accessToken = authStore.accessToken; // Get token from store
-            if (accessToken) {
-                config.headers['Authorization'] = `Bearer ${accessToken}`;
-            }
+// --- Request Interceptor ---
+api.interceptors.request.use(
+    (config) => {
+        const authStore = useAuthStore();
+        const authUrls = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh'];
+
+        // 인증이 필요없는 요청은 그냥 보냄
+        if (authUrls.some(url => config.url.includes(url))) {
             return config;
-        },
-        (error) => Promise.reject(error)
-    );
+        }
 
-    // Response Interceptor: Handle token refresh
-    instance.interceptors.response.use(
-        (response) => response,
-        async (error) => {
-            const originalRequest = error.config;
+        // 인증이 필요한 요청에 토큰 추가
+        if (authStore.accessToken) {
+            config.headers['Authorization'] = `Bearer ${authStore.accessToken}`;
+        }
 
-            // Prevent infinite loop if refresh token call itself fails or returns 401
-            if (originalRequest.url === '/api/v1/auth/refresh') {
-                authStore.logout(); // Refresh token failed, clear state and redirect to login
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// --- Response Interceptor ---
+api.interceptors.response.use(
+    (response) => response, // 성공적인 응답은 그대로 반환
+    async (error) => {
+        const originalRequest = error.config;
+        const authStore = useAuthStore();
+
+        // 401 에러이고, 재시도한 요청이 아닐 경우
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            
+            // 로그인/리프레시 요청 자체에서 401이 발생한 경우는 재발급 로직을 타지 않음
+            if (originalRequest.url.includes('/api/v1/auth/login') || originalRequest.url.includes('/api/v1/auth/refresh')) {
                 return Promise.reject(error);
             }
 
-            // If 401 and not already retrying
-            if (error.response.status === 401 && !originalRequest._retry) {
-                // 로그인 및 회원가입 엔드포인트에서 발생한 401 오류는 토큰 만료가 아닌 자격 증명 오류이므로
-                // 토큰 갱신 및 로그아웃 로직을 건너뜁니다.
-                if (originalRequest.url === '/api/v1/auth/login' || originalRequest.url === '/api/v1/auth/signup') {
-                    return Promise.reject(error); // 오류를 그대로 전파하여 LoginView.vue에서 처리할 수 있도록 합니다.
-                }
-
-                originalRequest._retry = true; // 이 요청이 재시도되었음을 표시합니다.
-                
-                // 현재 요청을 대기 큐에 추가하여 토큰 새로 고침이 완료될 때까지 기다리게 합니다.
-                let resolvePromise;
-                let rejectPromise; // Promise의 reject 함수를 저장할 변수 추가
-                const retryPromise = new Promise((resolve, reject) => {
-                    resolvePromise = resolve; // 나중에 큐의 요청들을 해결할 때 사용할 resolve 함수를 저장합니다.
-                    rejectPromise = reject; // Promise의 reject 함수도 저장합니다.
-                });
-                failedQueue.push({ resolve: resolvePromise, reject: rejectPromise }); // reject 함수를 올바르게 할당
-
-
-                if (!isRefreshing) {
-                    isRefreshing = true;
-                    const refreshToken = authStore.refreshToken; // Get refresh token from store
-
-                    if (!refreshToken) {
-                        // No refresh token, can't refresh. Logout.
-                        isRefreshing = false;
-                        authStore.logout();
-                        processQueue(error, null); // Reject all pending requests
-                        return Promise.reject(error);
-                    }
-
-                    try {
-                        // Attempt to refresh token
-                        const refreshResponse = await instance.post('/api/v1/auth/refresh', { refreshToken });
-                        
-                        if (refreshResponse.data && refreshResponse.data.success) {
-                            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
-                            
-                            // Update tokens in store and local storage
-                            authStore.accessToken = newAccessToken;
-                            authStore.refreshToken = newRefreshToken;
-                            localStorage.setItem('accessToken', newAccessToken);
-                            localStorage.setItem('refreshToken', newRefreshToken);
-
-                            isRefreshing = false;
-                            processQueue(null, newAccessToken); // Resolve all pending requests with new token
-                            originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                            return instance(originalRequest); // Retry the original request
-                        } else {
-                            // Refresh failed (e.g., refresh token expired)
-                            isRefreshing = false;
-                            authStore.logout(); // Refresh failed, logout
-                            processQueue(error, null); // Reject all pending requests
-                            return Promise.reject(error);
-                        }
-                    } catch (refreshError) {
-                        isRefreshing = false;
-                        authStore.logout(); // Refresh request itself failed, logout
-                        processQueue(refreshError, null); // Reject all pending requests
-                        return Promise.reject(refreshError);
-                    }
-                }
-                // Return promise that will resolve/reject once token is refreshed
-                return retryPromise.then(token => {
+            if (isRefreshing) {
+                // 토큰 재발급이 진행 중이면, 현재 요청을 큐에 추가하고 대기
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
                     originalRequest.headers['Authorization'] = 'Bearer ' + token;
-                    return instance(originalRequest);
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
                 });
             }
-            return Promise.reject(error);
-        }
-    );
-};
 
-export default instance;
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                // 토큰 재발급 시도
+                const newAccessToken = await authStore.refreshTokens();
+                // 재발급 성공 시, 실패했던 모든 요청 재실행
+                processQueue(null, newAccessToken);
+                // 현재 실패한 원래 요청도 재실행
+                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                return api(originalRequest);
+            } catch (refreshError) {
+                // 재발급 실패 시, 큐에 있던 모든 요청 실패 처리 및 로그아웃
+                processQueue(refreshError, null);
+                authStore.logout();
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+export default api;
