@@ -8,9 +8,9 @@ export const useAccountStore = defineStore('account', () => {
     const sessions = ref([])
     const trades = ref([])
 
-    const loadSessions = async (userId, newPage = 1) => {
+    const loadSessions = async (newPage = 1) => {
         try {
-            const data = await fetchGameSessionsByUserId(userId, newPage)
+            const data = await fetchGameSessionsByUserId(newPage)
 
             sessions.value = data.gameSessions ?? []
             totalPages.value = data.pagination?.totalPages ?? 1

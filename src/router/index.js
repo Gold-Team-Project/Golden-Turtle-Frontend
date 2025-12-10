@@ -46,7 +46,7 @@ const routes = [
             },
             //Account 페이지
             {
-                path: 'gamesession/:userId',
+                path: 'gamesession',
                 name: 'gamesession',
                 component: GameSessionParent
             },

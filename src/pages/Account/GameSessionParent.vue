@@ -4,8 +4,6 @@ import GameSessionFrame from '@/pages/Account/GameSessionFrame.vue'
 import { useAccountStore } from '@/stores/Account.js'
 import { storeToRefs } from 'pinia'
 
-const userId = 1
-
 const accountStore = useAccountStore()
 
 const {
@@ -15,11 +13,11 @@ const {
 } = storeToRefs(accountStore)
 
 const changePage = (p) => {
-  accountStore.loadSessions(userId, p)
+  accountStore.loadSessions(p)
 }
 
 onMounted(() => {
-  accountStore.loadSessions(userId, page.value)
+  accountStore.loadSessions(page.value)
 })
 </script>
 
