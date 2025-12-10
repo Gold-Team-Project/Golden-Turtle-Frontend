@@ -3,20 +3,23 @@
   <AuthLayout>
     <AuthCard>
       <h1 class="title">로그인</h1>
+      <!-- Add form tag and submit handler -->
+      <form @submit.prevent="handleLogin">
+        <div class="field">
+          <label>이메일</label>
+          <input v-model="userEmail" type="text" />
+        </div>
 
-      <div class="field">
-        <label>이메일</label>
-        <input v-model="email" type="text" />
-      </div>
+        <div class="field">
+          <label>비밀번호</label>
+          <input v-model="userPassword" type="password" />
+        </div>
 
-      <div class="field">
-        <label>비밀번호</label>
-        <input v-model="password" type="password" />
-      </div>
-
-      <div class="button-container">
-        <CommonButton class="login-btn">로그인</CommonButton>
-      </div>
+        <div class="button-container">
+          <!-- Change button type to submit -->
+          <CommonButton class="login-btn" type="submit">로그인</CommonButton>
+        </div>
+      </form>
 
       <div class="links">
         <RouterLink to="/register">회원가입</RouterLink>
@@ -31,9 +34,20 @@ import { ref } from "vue";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import AuthCard from "@/components/auth/AuthCard.vue";
 import CommonButton from "@/components/common/button/CommonButton.vue";
+import { useAuthStore } from "@/stores/auth"; // Import auth store
 
-const email = ref("");
-const password = ref("");
+// Rename to match backend API spec
+const userEmail = ref("");
+const userPassword = ref("");
+
+const authStore = useAuthStore(); // Initialize auth store
+
+const handleLogin = async () => {
+  await authStore.login({
+    userEmail: userEmail.value,
+    userPassword: userPassword.value,
+  });
+};
 </script>
 
 <style scoped>
