@@ -168,3 +168,10 @@
     justify-content: center;
     gap: 10px;
 }
+.btn-disabled {
+    background: #555 !important;
+    color: #ccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
