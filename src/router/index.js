@@ -9,6 +9,7 @@ import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
 import FindPasswordView from '@/views/auth/FindPasswordView.vue';
 import AdminStockManager from "@/views/admin/AdminStockManager.vue";
+import MyPageView from "@/views/mypage/MyPageView.vue"; // Import MyPageView
 
 const routes = [
     // --- Public Routes ---
@@ -37,6 +38,12 @@ const routes = [
                 path: '',
                 name: 'home',
                 component: MainContent,
+            },
+            // 마이페이지
+            {
+                path: '/mypage',
+                name: 'mypage',
+                component: MyPageView,
             },
             // 관리자 전용 페이지
             {
