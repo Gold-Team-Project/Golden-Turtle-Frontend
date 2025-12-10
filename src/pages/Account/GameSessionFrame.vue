@@ -50,8 +50,8 @@ const formatPercent = (v) => {
         <div class="cell">{{ s.sessionId }}</div>
         <div class="cell">{{ s.startedAt }}</div>
         <div class="cell">{{ s.endedAt }}</div>
-        <div class="cell right">{{ formatMoney(s.finalAmount) }}</div>
-        <div class="cell right">{{ formatPercent(s.finalReturn) }}</div>
+        <div class="cell right">{{ formatMoney(s.finalAsset) }}</div>
+        <div class="cell right">{{ formatPercent(s.totalReturn) }}</div>
       </div>
 
       <!-- 빈 상태 -->
@@ -64,7 +64,7 @@ const formatPercent = (v) => {
     <Pagination
         :page="page"
         :total-pages="totalPages"
-        @change="(p) => emit('change-page', p)"
+        @update:currentPage="(p) => emit('change-page', p)"
     />
   </div>
 </template>
@@ -107,7 +107,6 @@ const formatPercent = (v) => {
   background: transparent;
   overflow: hidden;
 
-  /* ✅ 핵심: absolute 제거 + grid로 컬럼 정렬 */
   display: grid;
   grid-template-columns:
     minmax(70px, 0.7fr)   /* 세션번호 */
@@ -160,7 +159,6 @@ const formatPercent = (v) => {
   font-weight: 800;
 }
 
-/* ✅ 모바일 대응: 컬럼 압축 & 텍스트 크기 다운 */
 @media (max-width: 768px) {
   .row {
     grid-template-columns:
@@ -176,7 +174,6 @@ const formatPercent = (v) => {
   }
 }
 
-/* ✅ 더 작은 화면에서는 시간 컬럼 줄바꿈/생략 허용 */
 @media (max-width: 520px) {
   .row {
     grid-template-columns:
