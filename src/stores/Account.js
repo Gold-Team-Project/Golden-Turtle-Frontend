@@ -23,7 +23,7 @@ export const useAccountStore = defineStore('account', () => {
     const loadTrades = async (sessionId,newPage = 1) => {
         try {
             const data = await fetchTradesBySessionId(sessionId, newPage)
-            trades.value = data.content
+            trades.value = data.trades ?? []
             totalPages.value = data.pagination?.totalPages ?? 1
             page.value = data.pagination?.currentPage ?? newPage
         } catch (error) {
@@ -35,6 +35,7 @@ export const useAccountStore = defineStore('account', () => {
         page,
         totalPages,
         sessions,
+        trades,
         loadTrades,
         loadSessions,
     }

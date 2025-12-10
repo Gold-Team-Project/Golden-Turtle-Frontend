@@ -1,19 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Pagination from '@/components/common/paging/Pagination.vue'
 import { useAccountStore } from '@/stores/Account.js'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()
-
 const accountStore = useAccountStore()
 
-const {
-  page,
-  totalPages,
-  trades
-} = storeToRefs(accountStore)
+const { page, totalPages, trades } = storeToRefs(accountStore)
 
 const formatMoney = (v) => {
   if (v == null) return '-'
@@ -22,11 +17,16 @@ const formatMoney = (v) => {
   return num.toLocaleString()
 }
 
-onMounted(() => {
+const loadPage = (newPage = 1) => {
   const sessionId = Number(route.params.sessionId)
-  useAccountStore.loadTrades(sessionId, p)
-})
+  if (!sessionId) return
 
+  accountStore.loadTrades(sessionId, newPage)
+}
+
+onMounted(() => {
+  loadPage(1)
+})
 </script>
 
 <template>
@@ -55,22 +55,22 @@ onMounted(() => {
       </div>
 
       <!-- Empty State -->
-      <div v-if="trades.length === 0" class="empty">
+      <div v-if="!trades || trades.length === 0" class="empty">
         조회된 거래 내역이 없습니다.
       </div>
     </div>
 
     <!-- Pagination -->
     <Pagination
-        :page="page"
+        :current-page="page"
         :total-pages="totalPages"
-        @update:currentPage="(p) => emit('change-page', p)"
+        @update:currentPage="loadPage"
     />
   </div>
 </template>
 
 <style scoped>
-/* Scoped styles from GameSessionFrame.vue */
+/* 그대로 유지 */
 .frame {
   width: 100%;
   max-width: 1088px;
