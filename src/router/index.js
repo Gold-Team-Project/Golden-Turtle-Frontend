@@ -62,8 +62,8 @@ router.beforeEach(async (to, from, next) => {
     const isLoggedIn = authStore.isLoggedIn;
     const isAdmin = authStore.isAdmin;
 
-    const publicPages = ['/login', '/register', '/find-password'];
-    const authRequired = !publicPages.includes(to.path);
+    const publicPages = ['/login', '/register', '/find-password'];  // 이 페이지들은 public (토큰 필요 없음)
+    const authRequired = !publicPages.includes(to.path); // publicPages에 없으면 인증이 필요함
 
     // 1. 로그인이 필요한 페이지에 접근하려 하지만, 로그인되지 않은 경우
     if (authRequired && !isLoggedIn) {
