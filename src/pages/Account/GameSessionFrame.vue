@@ -1,16 +1,17 @@
 <script setup>
 import Pagination from '@/components/common/paging/Pagination.vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   title: { type: String, default: 'GameSession' },
   sessions: { type: Array, default: () => [] },
-
   page: { type: Number, default: 1 },
   totalPages: { type: Number, default: 1 },
   maxButtons: { type: Number, default: 5 },
 })
 
 const emit = defineEmits(['change-page'])
+const router = useRouter()
 
 const formatMoney = (v) => {
   if (v == null) return '-'
@@ -24,6 +25,10 @@ const formatPercent = (v) => {
   const num = Number(v)
   if (Number.isNaN(num)) return String(v)
   return `${(num * 100).toFixed(0)}%`
+}
+
+const goToDetail = (sessionId) => {
+  router.push(`/gamesession/${sessionId}/detail`)
 }
 </script>
 
@@ -45,7 +50,8 @@ const formatPercent = (v) => {
       <div
           v-for="s in sessions"
           :key="s.sessionId"
-          class="row"
+          class="row clickable"
+          @click="goToDetail(s.sessionId)"
       >
         <div class="cell">{{ s.sessionId }}</div>
         <div class="cell">{{ s.startedAt }}</div>
@@ -117,6 +123,13 @@ const formatPercent = (v) => {
 
   align-items: center;
   min-height: 64px;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.row.clickable:hover {
+  background-color: #3a321d;
+  border-color: #ffbc00;
+  cursor: pointer;
 }
 
 /* 헤더 행 강조 */
