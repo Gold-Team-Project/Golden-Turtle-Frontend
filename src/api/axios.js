@@ -48,13 +48,23 @@ export const setAuthInterceptors = (authStore) => {
 
             // If 401 and not already retrying
             if (error.response.status === 401 && !originalRequest._retry) {
-                originalRequest._retry = true; // Mark request as retried
+                // 로그인 및 회원가입 엔드포인트에서 발생한 401 오류는 토큰 만료가 아닌 자격 증명 오류이므로
+                // 토큰 갱신 및 로그아웃 로직을 건너뜁니다.
+                if (originalRequest.url === '/api/v1/auth/login' || originalRequest.url === '/api/v1/auth/signup') {
+                    return Promise.reject(error); // 오류를 그대로 전파하여 LoginView.vue에서 처리할 수 있도록 합니다.
+                }
+
+                originalRequest._retry = true; // 이 요청이 재시도되었음을 표시합니다.
                 
+                // 현재 요청을 대기 큐에 추가하여 토큰 새로 고침이 완료될 때까지 기다리게 합니다.
                 let resolvePromise;
+                let rejectPromise; // Promise의 reject 함수를 저장할 변수 추가
                 const retryPromise = new Promise((resolve, reject) => {
-                    resolvePromise = resolve;
+                    resolvePromise = resolve; // 나중에 큐의 요청들을 해결할 때 사용할 resolve 함수를 저장합니다.
+                    rejectPromise = reject; // Promise의 reject 함수도 저장합니다.
                 });
-                failedQueue.push({ resolve: resolvePromise, reject: error });
+                failedQueue.push({ resolve: resolvePromise, reject: rejectPromise }); // reject 함수를 올바르게 할당
+
 
                 if (!isRefreshing) {
                     isRefreshing = true;
