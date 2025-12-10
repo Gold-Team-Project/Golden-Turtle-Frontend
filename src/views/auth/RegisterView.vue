@@ -3,122 +3,201 @@
   <AuthLayout>
     <AuthCard>
       <h1 class="title">회원가입</h1>
-      <form @submit.prevent="handleRegister">
-        <div class="field">
-          <label>이메일</label>
-          <input v-model="userEmail" type="text" :disabled="isEmailVerified" />
-          <div class="button-message-row"> <!-- New wrapper for button and message alignment -->
-            <p v-if="emailMessage" class="verify-message">{{ emailMessage }}</p>
-            <CommonButton class="verify-btn" type="button" @click="handleSendCode" :disabled="isEmailVerified">인증</CommonButton>
-          </div>
-        </div>
+      <el-form
+        ref="registerFormRef"
+        :model="registerForm"
+        :rules="rules"
+        label-position="top"
+        @submit.prevent="handleRegister(registerFormRef)"
+      >
+        <el-form-item label="이메일" prop="userEmail">
+          <el-input 
+            v-model="registerForm.userEmail" 
+            placeholder="이메일을 입력하세요" 
+            size="large"
+            :disabled="isEmailVerified"
+          >
+            <template #append>
+              <el-button @click="handleSendCode" :loading="isSendingCode" :disabled="isEmailVerified">인증</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
 
-        <div class="field">
-          <label>인증번호</label>
-          <input v-model="verificationCode" type="text" :disabled="isEmailVerified" />
-          <div class="button-message-row"> <!-- New wrapper for button and message alignment -->
-            <p v-if="codeMessage" class="verify-message" :class="{ 'success': isEmailVerified }">{{ codeMessage }}</p>
-            <CommonButton class="verify-btn" type="button" @click="handleVerifyCode" :disabled="isEmailVerified">확인</CommonButton>
-          </div>
-        </div>
+        <el-form-item label="인증번호" prop="verificationCode">
+          <el-input 
+            v-model="registerForm.verificationCode" 
+            placeholder="인증번호를 입력하세요" 
+            size="large"
+            :disabled="isEmailVerified"
+          >
+            <template #append>
+              <el-button @click="handleVerifyCode" :loading="isVerifyingCode" :disabled="isEmailVerified">
+                {{ isEmailVerified ? '인증완료' : '확인' }}
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
 
-        <div class="field">
-          <label>닉네임</label>
-          <input v-model="userNickname" type="text" />
-        </div>
+        <el-form-item label="닉네임" prop="userNickname">
+          <el-input v-model="registerForm.userNickname" placeholder="2~10자 이내의 한글, 영문, 숫자" size="large" />
+        </el-form-item>
 
-        <div class="field">
-          <label>비밀번호</label>
-          <input v-model="userPassword" type="password" />
-        </div>
+        <el-form-item label="비밀번호" prop="userPassword">
+          <el-input
+            v-model="registerForm.userPassword"
+            type="password"
+            placeholder="8~16자 영문/숫자/특수문자 조합"
+            show-password
+            size="large"
+          />
+        </el-form-item>
 
-        <div class="field">
-          <label>비밀번호 확인</label>
-          <input v-model="passwordConfirm" type="password" />
-        </div>
+        <el-form-item label="비밀번호 확인" prop="passwordConfirm">
+          <el-input
+            v-model="registerForm.passwordConfirm"
+            type="password"
+            placeholder="비밀번호를 다시 입력하세요"
+            show-password
+            size="large"
+          />
+        </el-form-item>
 
-        <div class="button-container">
-          <CommonButton class="register-btn" type="submit">회원가입</CommonButton>
-        </div>
-      </form>
+        <el-form-item>
+          <el-button 
+            class="register-btn" 
+            type="primary" 
+            native-type="submit" 
+            :loading="isRegistering"
+            size="large"
+          >
+            회원가입
+          </el-button>
+        </el-form-item>
+      </el-form>
     </AuthCard>
   </AuthLayout>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
+import { ElNotification } from 'element-plus'
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import AuthCard from "@/components/auth/AuthCard.vue";
-import CommonButton from "@/components/common/button/CommonButton.vue";
 import { useAuthStore } from "@/stores/auth";
 
-const userEmail = ref("");
-const verificationCode = ref("");
-const userNickname = ref("");
-const userPassword = ref("");
-const passwordConfirm = ref("");
-
-// For dynamic messages and verification status
-const emailMessage = ref("");
-const codeMessage = ref("");
-const isEmailVerified = ref(false);
-
 const authStore = useAuthStore();
+const registerFormRef = ref();
 
-// Step 1: Send verification code
+const isSendingCode = ref(false);
+const isVerifyingCode = ref(false);
+const isEmailVerified = ref(false);
+const isRegistering = ref(false);
+
+const registerForm = reactive({
+  userEmail: "",
+  verificationCode: "",
+  userNickname: "",
+  userPassword: "",
+  passwordConfirm: "",
+});
+
+// --- Validation Rules ---
+
+const validatePass = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('비밀번호를 입력해주세요.'))
+  } else {
+    const passPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
+    if (!passPattern.test(value)) {
+      callback(new Error('8~16자 영문, 숫자, 특수문자를 포함해야 합니다.'))
+    }
+    if (registerFormRef.value) {
+      registerFormRef.value.validateField('passwordConfirm', () => null)
+    }
+    callback()
+  }
+}
+const validatePass2 = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('비밀번호를 다시 입력해주세요.'))
+  } else if (value !== registerForm.userPassword) {
+    callback(new Error("비밀번호가 일치하지 않습니다."))
+  } else {
+    callback()
+  }
+}
+
+const rules = reactive({
+  userEmail: [
+    { required: true, message: '이메일을 입력해주세요.', trigger: 'blur' },
+    { type: 'email', message: '유효한 이메일 주소를 입력해주세요.', trigger: ['blur', 'change'] }
+  ],
+  verificationCode: [{ required: true, message: '인증번호를 입력해주세요.', trigger: 'blur' }],
+  userNickname: [
+    { required: true, message: '닉네임을 입력해주세요.', trigger: 'blur' },
+    { min: 2, max: 10, message: '2~10자 이내로 입력해주세요.', trigger: 'blur' },
+    { pattern: /^[가-힣A-Za-z0-9]+$/, message: '특수문자와 공백은 사용할 수 없습니다.', trigger: 'blur'}
+  ],
+  userPassword: [{ required: true, validator: validatePass, trigger: 'blur' }],
+  passwordConfirm: [{ required: true, validator: validatePass2, trigger: 'blur' }],
+});
+
+
+// --- Handlers ---
+
 const handleSendCode = async () => {
-  if (!userEmail.value) {
-    emailMessage.value = "이메일을 입력해주세요.";
-    return;
-  }
-  emailMessage.value = "인증번호를 발송 중입니다...";
-  const success = await authStore.sendVerificationCode(userEmail.value);
-  if (success) {
-    emailMessage.value = "인증번호가 발송되었습니다. 메일을 확인해주세요.";
-  } else {
-    emailMessage.value = "인증번호 발송에 실패했습니다.";
-  }
-};
-
-// Step 2: Verify the code
-const handleVerifyCode = async () => {
-  if (!verificationCode.value) {
-    codeMessage.value = "인증번호를 입력해주세요.";
-    return;
-  }
-  const success = await authStore.verifyEmail({
-    email: userEmail.value,
-    code: verificationCode.value,
+  await registerFormRef.value?.validateField('userEmail', async (isValid) => {
+    if (isValid) {
+      isSendingCode.value = true;
+      const success = await authStore.sendVerificationCode(registerForm.userEmail);
+      isSendingCode.value = false;
+      if (success) {
+        ElNotification({ title: '성공', message: '인증번호가 발송되었습니다.', type: 'success' });
+      } else {
+        ElNotification({ title: '오류', message: '인증번호 발송에 실패했습니다.', type: 'error' });
+      }
+    }
   });
-
-  if (success) {
-    isEmailVerified.value = true;
-    codeMessage.value = "이메일 인증이 완료되었습니다.";
-  } else {
-    isEmailVerified.value = false;
-    codeMessage.value = "인증번호가 일치하지 않습니다.";
-  }
 };
 
-// Step 3: Final registration
-const handleRegister = async () => {
-  if (!isEmailVerified.value) {
-    alert("이메일 인증을 먼저 완료해주세요.");
-    return;
-  }
-  if (userPassword.value !== passwordConfirm.value) {
-    alert("비밀번호가 일치하지 않습니다.");
-    return;
-  }
-  if (!userNickname.value || !userPassword.value) {
-    alert("닉네임과 비밀번호를 모두 입력해주세요.");
-    return;
-  }
+const handleVerifyCode = async () => {
+  await registerFormRef.value?.validateField(['userEmail', 'verificationCode'], async (isValid) => {
+    if (isValid) {
+      isVerifyingCode.value = true;
+      const success = await authStore.verifyEmail({
+        email: registerForm.userEmail,
+        code: registerForm.verificationCode,
+      });
+      isVerifyingCode.value = false;
+      if (success) {
+        isEmailVerified.value = true;
+        ElNotification({ title: '성공', message: '이메일 인증이 완료되었습니다.', type: 'success' });
+      } else {
+        ElNotification({ title: '오류', message: '인증번호가 올바르지 않습니다.', type: 'error' });
+      }
+    }
+  });
+};
 
-  await authStore.signup({
-    userEmail: userEmail.value,
-    userPassword: userPassword.value,
-    userNickname: userNickname.value,
+const handleRegister = async (formEl) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid) => {
+    if (valid) {
+      if (!isEmailVerified.value) {
+        ElNotification({ title: '오류', message: '이메일 인증을 먼저 완료해주세요.', type: 'error' });
+        return;
+      }
+      isRegistering.value = true;
+      try {
+        await authStore.signup({
+          userEmail: registerForm.userEmail,
+          userPassword: registerForm.userPassword,
+          userNickname: registerForm.userNickname,
+        });
+      } finally {
+        isRegistering.value = false;
+      }
+    }
   });
 };
 </script>
@@ -130,88 +209,21 @@ const handleRegister = async () => {
   margin-bottom: 30px;
 }
 
-.field {
-  color: white;
-  margin-bottom: 20px;
+:deep(.el-form-item__label) {
+  color: white !important;
+  margin-bottom: 5px !important;
 }
 
-input {
-  width: 100%;
-  height: 38px;
-  border-radius: 5px;
-  padding: 8px;
-}
-
-.button-message-row { /* New style for button and message alignment */
-  display: flex;
-  align-items: center; /* Vertically center button and text */
-  justify-content: flex-end; /* Align button and text to the right */
-  margin-top: 10px; /* Spacing below the input */
-}
-.button-message-row .verify-btn {
-  width: 80px; /* Smaller width for buttons */
-  height: 38px;
-  margin-left: 10px; /* Space between message and button */
-  background: #ffc933;
-  border-radius: 5px;
-  font-weight: bold;
-  transition: background-color 0.3s ease; /* Add transition */
-}
-.button-message-row .verify-btn:hover {
-  background-color: #F2CA57;
-}
-.button-message-row .verify-message {
-  margin-top: 0; /* Remove top margin as it's now in a flex row */
-  margin-right: 10px; /* Space between message and button */
-  white-space: nowrap; /* Try to keep text on one line */
-  overflow: hidden; /* Hide overflow if text is too long */
-  text-overflow: ellipsis; /* Add ellipsis for overflow */
-  flex-shrink: 1; /* Allow message to shrink */
-  min-width: 0; /* Allow message to shrink below its content size */
-  color: red; /* Default color for messages */
-  font-size: 12px;
-}
-.button-message-row .verify-message.success {
-    color: #4caf50; /* Green for success */
-}
-
-
-.verify-btn:disabled {
-    background: #555;
-    cursor: not-allowed;
-}
-
-/* Original .verify-message styles, now mostly moved into .button-message-row .verify-message */
-.verify-message {
-  color: red;
-  font-size: 12px;
-}
-
-
-.button-container {
-  display: flex;
-  justify-content: center;
+.el-form-item {
+  margin-bottom: 25px;
 }
 
 .register-btn {
-  width: 120px;
-  height: 40px;
-  margin-top: 25px;
-  background: #ffc933;
-  border-radius: 5px;
+  width: 100%;
+  height: 45px;
+  margin-top: 20px;
   font-weight: bold;
-  transition: background-color 0.3s ease; /* Add transition */
-}
-.register-btn:hover {
-  background-color: #F2CA57;
-}
-
-@media (max-width: 768px) {
-  .title {
-    font-size: 24px;
-  }
-
-  /* .verify-btn media query might need adjustment if default width is 100% */
+  background-color: #ffc933;
+  border-color: #ffc933;
 }
 </style>
-
