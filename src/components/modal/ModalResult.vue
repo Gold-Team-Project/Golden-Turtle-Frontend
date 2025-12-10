@@ -16,8 +16,8 @@
         <div class="table-row">
           <span>{{ result.rank }}등</span>
           <span>{{ result.nickname }}</span>
-          <span>$ {{ format(result.totalAsset) }}</span>
-          <span>+ {{ result.returnRate }}%</span>
+          <span>$ {{ format(result.finalAsset) }}</span>
+          <span>{{ result.totalReturn }}%</span>
         </div>
       </div>
     </div>
@@ -27,8 +27,10 @@
 <script setup>
 const props = defineProps({ result: Object })
 
-const format = (num) =>
-    num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+const format = (num) => {
+  if (!num) return "0"
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+}
 </script>
 
 <style scoped>
