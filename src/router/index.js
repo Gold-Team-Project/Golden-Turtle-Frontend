@@ -7,6 +7,7 @@ import MainContent from '@/views/main/MainContent.vue'
 import LoginView from '@/views/auth/LoginView.vue'
 import RegisterView from '@/views/auth/RegisterView.vue'
 import FindPasswordView from '@/views/auth/FindPasswordView.vue'
+import AdminStockManager from "@/views/admin/AdminStockManager.vue";
 
 const routes = [
     // ⭐ 메인 레이아웃이 적용되지 않는 페이지들
@@ -25,6 +26,11 @@ const routes = [
         name: 'find-password',
         component: FindPasswordView
     },
+    {
+        path: '/adminstock',
+        name: 'adminstock',
+        component: AdminStockManager,
+    },
 
     // ⭐ MainLayout이 적용되는 페이지들
     {
@@ -36,6 +42,7 @@ const routes = [
                 name: 'home',
                 component: MainContent
             },
+
             // 필요하면 여기에 다른 MainLayout 페이지들 추가
         ]
     }
