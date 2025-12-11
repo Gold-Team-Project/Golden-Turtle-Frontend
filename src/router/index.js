@@ -1,38 +1,35 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
-import MainLayout from '@/layouts/MainLayout.vue'
-import MainContent from '@/views/main/MainContent.vue'
-
-// 로그인/회원가입 등 메인레이아웃 제외 페이지
-import LoginView from '@/views/auth/LoginView.vue'
-import RegisterView from '@/views/auth/RegisterView.vue'
-import FindPasswordView from '@/views/auth/FindPasswordView.vue'
+import GameSessionParent from "@/pages/Account/GameSessionParent.vue";
+import GameSessionDetail from "@/pages/Account/GameSessionDetail.vue";
+import MainLayout from '@/layouts/MainLayout.vue';
+import MainContent from '@/views/main/MainContent.vue';
+import LoginView from '@/views/auth/LoginView.vue';
+import RegisterView from '@/views/auth/RegisterView.vue';
+import FindPasswordView from '@/views/auth/FindPasswordView.vue';
 import AdminStockManager from "@/views/admin/AdminStockManager.vue";
+import MyPageView from "@/views/mypage/MyPageView.vue"; // Import MyPageView
 
 const routes = [
-    // ⭐ 메인 레이아웃이 적용되지 않는 페이지들
+    // --- Public Routes ---
     {
         path: '/login',
         name: 'login',
-        component: LoginView
+        component: LoginView,
     },
     {
         path: '/register',
         name: 'register',
-        component: RegisterView
+        component: RegisterView,
     },
     {
         path: '/find-password',
         name: 'find-password',
-        component: FindPasswordView
-    },
-    {
-        path: '/adminstock',
-        name: 'adminstock',
-        component: AdminStockManager,
+        component: FindPasswordView,
     },
 
-    // ⭐ MainLayout이 적용되는 페이지들
+    // --- Authenticated Routes ---
     {
         path: '/',
         component: MainLayout,
@@ -40,17 +37,77 @@ const routes = [
             {
                 path: '',
                 name: 'home',
-                component: MainContent
+                component: MainContent,
             },
-
+            // 마이페이지
+            {
+                path: '/mypage',
+                name: 'mypage',
+                component: MyPageView,
+            },
+            // 관리자 전용 페이지
+            {
+                path: '/adminstock',
+                name: 'adminstock',
+                component: AdminStockManager,
+            },
+            //Account 페이지
+            {
+                path: 'gamesession',
+                name: 'gamesession',
+                component: GameSessionParent
+            },
+            {
+                path: 'gamesession/:sessionId/detail',
+                name: 'gamesession-detail',
+                component: GameSessionDetail
+            }
             // 필요하면 여기에 다른 MainLayout 페이지들 추가
         ]
     }
-]
+];
+
 
 const router = createRouter({
     history: createWebHistory(),
     routes
-})
+});
 
-export default router
+router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore();
+
+    // 앱 로드 시 localStorage에서 인증 상태를 복원
+    if (!authStore.isInitialized) {
+        authStore.loadFromStorage();
+    }
+
+    const isLoggedIn = authStore.isLoggedIn;
+    const isAdmin = authStore.isAdmin;
+
+    const publicPages = ['/login', '/register', '/find-password'];  // 이 페이지들은 public (토큰 필요 없음)
+    const authRequired = !publicPages.includes(to.path); // publicPages에 없으면 인증이 필요함
+
+    // 1. 로그인이 필요한 페이지에 접근하려 하지만, 로그인되지 않은 경우
+    if (authRequired && !isLoggedIn) {
+        return next({
+            path: '/login',
+            query: { redirect: to.fullPath } // 원래 가려던 경로를 쿼리로 전달
+        });
+    }
+
+    // 2. 로그인된 사용자가 로그인/회원가입 페이지에 접근하려는 경우
+    if (isLoggedIn && publicPages.includes(to.path)) {
+        return next('/');
+    }
+
+    // 3. 관리자 페이지에 접근하려는 경우, 관리자 권한 확인
+    if (to.name === 'adminstock' && !isAdmin) {
+        alert('관리자만 접근 가능합니다.');
+        return next('/');
+    }
+
+    // 그 외 모든 경우, 정상적으로 이동
+    next();
+});
+
+export default router;
