@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import {fetchGameSessionsByUserId, fetchTradesBySessionId} from '@/api/AccountApi.js'
+import {fetchGameSessionsByUserId,
+    fetchTradesBySessionId,
+    fetchHoldingsByUserId,
+    fetchCashBalanceByUserId} from '@/api/AccountApi.js'
 
 export const useAccountStore = defineStore('account', () => {
     const page = ref(1)
     const totalPages = ref(1)
+    const cashBalance = ref(1)
     const sessions = ref([])
     const trades = ref([])
+    const holdings =ref([])
 
     const loadSessions = async (newPage = 1) => {
         try {
@@ -31,12 +36,37 @@ export const useAccountStore = defineStore('account', () => {
         }
     }
 
+    const loadHoldings = async (newPage = 1) => {
+        try {
+            const data = await fetchHoldingsByUserId(newPage)
+            holdings.value = data.holdings ?? []
+            totalPages.value = data.pagination?.totalPages ?? 1
+            page.value = data.pagination?.currentPage ?? newPage
+            console.log(holdings.value)
+        } catch (error) {
+            console.error('거래내역을 불러올 수 없습니다:', error)
+        }
+    }
+
+    const loadCashBalance = async () => {
+        try {
+            const data = await fetchCashBalanceByUserId()
+            cashBalance.value = data ?? 1
+            console.log(cashBalance.value)
+        } catch (error) {
+            console.error('거래내역을 불러올 수 없습니다:', error)
+        }
+    }
     return {
         page,
         totalPages,
         sessions,
         trades,
+        holdings,
+        cashBalance,
         loadTrades,
         loadSessions,
+        loadHoldings,
+        loadCashBalance
     }
 })

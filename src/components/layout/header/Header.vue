@@ -10,9 +10,9 @@
     <!-- Right Navigation -->
     <nav class="gt-nav">
       <a href="/mypage">Mypage</a>
-      <a href="/history">History</a>
+      <a @click="goHistory" href="#">History</a>
       <a href="/market">Market</a>
-      <a @click="goPortfolio" href="#">Portfolio</a>
+      <a href="/Portfolio">Portfolio</a>
       <!-- Modified logout link to trigger handleLogout function -->
       <a @click.prevent="handleLogout" href="#">Logout</a>
     </nav>
@@ -29,7 +29,7 @@ import { useAuthStore } from '@/stores/auth'; // New import
 
 const authStore = useAuthStore(); // Initialize auth store
 const router = useRouter();
-const goPortfolio = () =>{
+const goHistory = () =>{
   router.push({name: 'gamesession'})
 }
 
