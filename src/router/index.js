@@ -9,16 +9,9 @@ import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
 import FindPasswordView from '@/views/auth/FindPasswordView.vue';
 import AdminStockManager from "@/views/admin/AdminStockManager.vue";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import Portfolio from "@/pages/Account/Portfolio.vue";
-import MyPageView from "@/views/mypage/MyPageView.vue"; // Import MyPageView
-=======
 import MyPageView from "@/views/mypage/MyPageView.vue";
-=======
->>>>>>> 4869a6d (feat: 종목 상세보기 페이지 세부 정보 및 매수/매도 컴포넌트 추가)
 import StockDetailView from '@/views/stock/StockDetailView.vue';
->>>>>>> 4030364 (feat: 종목 상세보기 페이지 및  차트 draft 구현)
 
 const routes = [
     // --- Public Routes ---
@@ -54,7 +47,6 @@ const routes = [
                 name: 'adminstock',
                 component: AdminStockManager,
             },
-<<<<<<< HEAD
             //Account 페이지
             {
                 path: 'gamesession',
@@ -71,9 +63,8 @@ const routes = [
                 path: 'portfolio',
                 name: 'portfolio',
                 component: Portfolio
-            }
+            },
             // 필요하면 여기에 다른 MainLayout 페이지들 추가
-=======
             // 종목 상세 페이지
             {
                 path: 'stock/:symbol',
@@ -81,7 +72,6 @@ const routes = [
                 component: StockDetailView,
                 props: true
             },
->>>>>>> 4030364 (feat: 종목 상세보기 페이지 및  차트 draft 구현)
         ]
     }
 ];
@@ -107,21 +97,12 @@ router.beforeEach(async (to, from, next) => {
     const authRequired = !publicPages.includes(to.path); // publicPages에 없으면 인증이 필요함
 
     // 1. 로그인이 필요한 페이지에 접근하려 하지만, 로그인되지 않은 경우
-<<<<<<< HEAD
     if (authRequired && !isLoggedIn) {
         return next({
             path: '/login',
             query: { redirect: to.fullPath } // 원래 가려던 경로를 쿼리로 전달
         });
     }
-=======
-    // if (authRequired && !isLoggedIn) {
-    //     return next({ 
-    //         path: '/login', 
-    //         query: { redirect: to.fullPath } // 원래 가려던 경로를 쿼리로 전달
-    //     });
-    // }
->>>>>>> 4869a6d (feat: 종목 상세보기 페이지 세부 정보 및 매수/매도 컴포넌트 추가)
 
     // 2. 로그인된 사용자가 로그인/회원가입 페이지에 접근하려는 경우
     if (isLoggedIn && publicPages.includes(to.path)) {
