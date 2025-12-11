@@ -10,7 +10,8 @@ import RegisterView from '@/views/auth/RegisterView.vue';
 import FindPasswordView from '@/views/auth/FindPasswordView.vue';
 import AdminStockManager from "@/views/admin/AdminStockManager.vue";
 import Portfolio from "@/pages/Account/Portfolio.vue";
-import MyPageView from "@/views/mypage/MyPageView.vue"; // Import MyPageView
+import MyPageView from "@/views/mypage/MyPageView.vue";
+import StockDetailView from '@/views/stock/StockDetailView.vue';
 
 const routes = [
     // --- Public Routes ---
@@ -40,12 +41,6 @@ const routes = [
                 name: 'home',
                 component: MainContent,
             },
-            // 마이페이지
-            {
-                path: '/mypage',
-                name: 'mypage',
-                component: MyPageView,
-            },
             // 관리자 전용 페이지
             {
                 path: '/adminstock',
@@ -68,8 +63,15 @@ const routes = [
                 path: 'portfolio',
                 name: 'portfolio',
                 component: Portfolio
-            }
+            },
             // 필요하면 여기에 다른 MainLayout 페이지들 추가
+            // 종목 상세 페이지
+            {
+                path: 'stock/:symbol',
+                name: 'stock-detail',
+                component: StockDetailView,
+                props: true
+            },
         ]
     }
 ];
