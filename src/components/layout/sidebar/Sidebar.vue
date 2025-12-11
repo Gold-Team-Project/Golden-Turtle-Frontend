@@ -84,8 +84,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import CommonButton from "@/components/common/button/CommonButton.vue";
 import "@/assets/sidebar/Sidebar.css";
 import {onMounted, ref} from "vue"
 import { useAccountStore } from '@/stores/Account.js'
@@ -102,10 +100,8 @@ const accountStore = useAccountStore()
 const totalSeconds = ref(600); // 10분 = 600초
 import { useRankStore } from "@/stores/rank.js";
 
-const emit = defineEmits(["open-modal"]);
 const rankStore = useRankStore();
 
-const isGameActive = ref(false);
 const sessionId = ref(null);
 
 // 천단위 콤마
@@ -113,7 +109,6 @@ const formatNumber = (n) =>
     n?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? "0";
 
 // ===== 타이머 =====
-const totalSeconds = ref(600);
 const timer = ref("00 : 10 : 00");
 let timerInterval = null;
 
