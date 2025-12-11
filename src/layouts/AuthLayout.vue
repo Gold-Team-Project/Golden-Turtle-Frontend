@@ -1,7 +1,17 @@
 <!-- src/layouts/AuthLayout.vue -->
+<script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const goToLogin = () => {
+  router.push('/login');
+};
+</script>
+
 <template>
   <div class="auth-wrapper">
-    <div class="left-area">
+    <div class="left-area" @click="goToLogin">
       <img src="@/assets/GOLDENTURTLE.svg" class="logo" />
       <h1 class="brand">Golden Turtle</h1>
     </div>
@@ -27,6 +37,7 @@
   align-items: center;
   justify-content: center;
   color: #ffc933;
+  cursor: pointer; /* Add cursor pointer to indicate clickability */
 }
 
 .logo {

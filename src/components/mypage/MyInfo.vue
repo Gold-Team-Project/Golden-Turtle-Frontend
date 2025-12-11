@@ -5,19 +5,24 @@
     <div class="form-wrapper">
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent="handleNicknameChange(formRef)">
         <el-form-item label="닉네임" prop="nickname">
-          <div class="nickname-field">
-            <el-input v-model="form.nickname" placeholder="2~10자 이내의 한글, 영문, 숫자" size="large" />
-            <el-button 
-              class="action-btn" 
-              type="primary" 
-              size="large" 
-              native-type="submit" 
-              :loading="isLoading"
-              :disabled="isLoading"
-            >
-              수정
-            </el-button>
-          </div>
+          <el-input 
+            v-model="form.nickname" 
+            placeholder="2~10자 이내의 한글, 영문, 숫자" 
+            size="large"
+          >
+            <template #append>
+              <el-button 
+                class="action-btn" 
+                type="primary" 
+                size="large" 
+                native-type="submit" 
+                :loading="isLoading"
+                :disabled="isLoading"
+              >
+                수정
+              </el-button>
+            </template>
+          </el-input>
         </el-form-item>
       </el-form>
     </div>
@@ -87,6 +92,7 @@ const handleNicknameChange = async (formEl) => {
 }
 .form-wrapper {
   max-width: 500px;
+  margin: 0 auto; /* Center the container */
 }
 .section-title {
   color: #fff;
