@@ -68,15 +68,14 @@
             :key="rankItem.sessionId"
         >
 
-          <!-- rankItem은 separator가 없음 → 바로 출력 -->
           <div
               class="rank-item"
               :class="{
-              'rank-low': rankItem.rank > 3,
-              [rankStore.rankAnimation]:
-                rankStore.mySessionId &&
-                rankItem.sessionId === rankStore.mySessionId
-            }"
+                'rank-low': rankItem.rank > 3,
+                [rankStore.rankAnimation]:
+                  rankStore.mySessionId &&
+                  rankItem.sessionId === rankStore.mySessionId
+              }"
           >
             <div class="rank-left-col">
               <span v-if="rankItem.rank === 1">🥇</span>
@@ -121,9 +120,11 @@ const rankStore = useRankStore();
 const isGameActive = ref(false);
 const sessionId = ref(null);
 
-const formatNumber = (n) => n?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? "0";
+// 천단위 콤마
+const formatNumber = (n) =>
+    n?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? "0";
 
-// 타이머
+// ===== 타이머 =====
 const totalSeconds = ref(600);
 const timer = ref("00 : 10 : 00");
 let timerInterval = null;
@@ -144,35 +145,42 @@ const startCountdown = () => {
     timer.value = formatTime(totalSeconds.value);
   }, 1000);
 };
-
+// ===== 게임 시작 =====
 const startGame = async () => {
   try {
     const res = await api.post(`/api/v1/game-session/start`);
     sessionId.value = res.data.data;
-    console.log("세션 ID 발급:", sessionId.value);
+
+    // ⭐ 세션ID 저장
+    localStorage.setItem("gameSessionId", sessionId.value.toString());
 
     isGameActive.value = true;
     totalSeconds.value = 600;
     timer.value = formatTime(600);
-    startCountdown();
 
-    // STOMP 연결 + 내 sessionId 설정
-    rankStore.connectStomp(sessionId.value);
+    localStorage.setItem("gameStartTime", Date.now().toString());
+
+    startCountdown();
+    rankStore.connectStomp(sessionId.value); // STOMP 연결
 
   } catch (e) {
     console.error("게임 시작 실패", e);
   }
-};
-
-const endGame = async () => {
+};const endGame = async () => {
   try {
     const res = await api.post(`/api/v1/game-session/end`);
     emit("open-modal", res.data.data);
 
     clearInterval(timerInterval);
+
     totalSeconds.value = 600;
     timer.value = formatTime(600);
     isGameActive.value = false;
+
+    // ⭐ 저장된 세션ID 제거
+    localStorage.removeItem("gameSessionId");
+    localStorage.removeItem("gameStartTime");
+
   } catch (e) {
     console.error("게임 종료 실패", e);
   }
@@ -180,13 +188,39 @@ const endGame = async () => {
 
 const emitEnd = () => endGame();
 
-// 더미 데이터 (API 완성 시 제거)
+// ===== 보유 현황 더미 =====
 const holdings = ref([
   { id: 1, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
   { id: 2, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
 ]);
 
+// ===== 새로고침 시 타이머 복구 =====
 onMounted(() => {
+  // ⭐ 저장된 세션ID 불러오기
+  const savedSessionId = localStorage.getItem("gameSessionId");
+  if (savedSessionId) {
+    sessionId.value = Number(savedSessionId);
+
+    // ⭐ STOMP 자동 재연결 → 실시간 순위 유지
+    rankStore.connectStomp(sessionId.value);
+  }
+
+  // ⭐ 타이머 복구
+  const saved = localStorage.getItem("gameStartTime");
+  if (saved) {
+    const elapsed = Math.floor((Date.now() - Number(saved)) / 1000);
+    const remain = 600 - elapsed;
+
+    if (remain > 0) {
+      totalSeconds.value = remain;
+      timer.value = formatTime(remain);
+      isGameActive.value = true;
+      startCountdown();
+    } else {
+      localStorage.removeItem("gameStartTime");
+    }
+  }
+
   rankStore.loadRanking(api);
 });
 </script>
