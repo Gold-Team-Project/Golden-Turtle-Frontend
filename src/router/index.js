@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
+import GameSessionParent from "@/pages/Account/GameSessionParent.vue";
+import GameSessionDetail from "@/pages/Account/GameSessionDetail.vue";
 import MainLayout from '@/layouts/MainLayout.vue';
 import MainContent from '@/views/main/MainContent.vue';
 import LoginView from '@/views/auth/LoginView.vue';
@@ -26,7 +28,7 @@ const routes = [
         name: 'find-password',
         component: FindPasswordView,
     },
-    
+
     // --- Authenticated Routes ---
     {
         path: '/',
@@ -49,9 +51,22 @@ const routes = [
                 name: 'adminstock',
                 component: AdminStockManager,
             },
+            //Account 페이지
+            {
+                path: 'gamesession',
+                name: 'gamesession',
+                component: GameSessionParent
+            },
+            {
+                path: 'gamesession/:sessionId/detail',
+                name: 'gamesession-detail',
+                component: GameSessionDetail
+            }
+            // 필요하면 여기에 다른 MainLayout 페이지들 추가
         ]
     }
 ];
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -74,8 +89,8 @@ router.beforeEach(async (to, from, next) => {
 
     // 1. 로그인이 필요한 페이지에 접근하려 하지만, 로그인되지 않은 경우
     if (authRequired && !isLoggedIn) {
-        return next({ 
-            path: '/login', 
+        return next({
+            path: '/login',
             query: { redirect: to.fullPath } // 원래 가려던 경로를 쿼리로 전달
         });
     }
