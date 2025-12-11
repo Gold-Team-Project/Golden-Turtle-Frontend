@@ -13,6 +13,7 @@
           >
             시작
           </CommonButton>
+
           <CommonButton
               :buttonClass="isGameActive ? 'btn-red' : 'btn-disabled'"
               :disabled="!isGameActive"
@@ -20,7 +21,6 @@
           >
             종료
           </CommonButton>
-
         </div>
       </div>
 
@@ -30,6 +30,7 @@
       </div>
     </div>
 
+    <!-- 보유 현황 -->
     <div class="sidebar-middle">
       <p class="section-title-bold">보유 현황</p>
 
@@ -56,140 +57,136 @@
       </div>
     </div>
 
+    <!-- 현재 순위 -->
     <div>
       <p class="section-title-bold">현재 순위</p>
 
       <div class="card-panel ranking-panel">
-        <div
-            v-for="rank in ranking.slice(0, 3)"
-            :key="rank.rank"
-            class="rank-item"
-        >
-          <div>
-            <span v-if="rank.rank === 1">🥇</span>
-            <span v-else-if="rank.rank === 2">🥈</span>
-            <span v-else-if="rank.rank === 3">🥉</span>
-            <span>{{ rank.nickname }}</span>
-          </div>
-
-          <div class="rank-money">
-            $ {{ rank.total }}
-          </div>
-        </div>
-
-        <div class="rank-dots">•••</div>
 
         <div
-            v-for="rank in ranking.slice(3)"
-            :key="rank.rank"
-            class="rank-item rank-low"
+            v-for="rankItem in rankStore.getDisplayRanking"
+            :key="rankItem.sessionId"
         >
-          <p>{{ rank.rank }}등 {{ rank.nickname }}</p>
-          <p>$ {{ rank.total }}</p>
+
+          <!-- rankItem은 separator가 없음 → 바로 출력 -->
+          <div
+              class="rank-item"
+              :class="{
+              'rank-low': rankItem.rank > 3,
+              [rankStore.rankAnimation]:
+                rankStore.mySessionId &&
+                rankItem.sessionId === rankStore.mySessionId
+            }"
+          >
+            <div class="rank-left-col">
+              <span v-if="rankItem.rank === 1">🥇</span>
+              <span v-else-if="rankItem.rank === 2">🥈</span>
+              <span v-else-if="rankItem.rank === 3">🥉</span>
+              <span v-else class="rank-number">{{ rankItem.rank }}등</span>
+
+              <span class="rank-nickname">
+                {{ rankItem.nickname }}
+
+                <span
+                    v-if="rankItem.isMe"
+                    class="me-badge"
+                    style="color: #2ecc71; font-weight: bold; margin-left: 5px;"
+                >
+                  (나)
+                </span>
+              </span>
+            </div>
+
+            <div class="rank-money">
+              $ {{ formatNumber(rankItem.totalAsset) }}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
-
   </aside>
 </template>
 
 <script setup>
-import { ref } from "vue"
-import CommonButton from "@/components/common/button/CommonButton.vue"
-import "@/assets/sidebar/Sidebar.css"
+import { ref, onMounted } from "vue";
+import CommonButton from "@/components/common/button/CommonButton.vue";
+import "@/assets/sidebar/Sidebar.css";
 import api from "@/api/axios";
-const emit = defineEmits(["open-modal"])
-const isGameActive = ref(false)
-const userId = 1;
+import { useRankStore } from "@/stores/rank.js";
 
-// ========= TIMER ==========
-const totalSeconds = ref(600); // 10분 = 600초
+const emit = defineEmits(["open-modal"]);
+const rankStore = useRankStore();
+
+const isGameActive = ref(false);
+const sessionId = ref(null);
+
+const formatNumber = (n) => n?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? "0";
+
+// 타이머
+const totalSeconds = ref(600);
 const timer = ref("00 : 10 : 00");
 let timerInterval = null;
 
-const formatTime = (sec) => {
-  const h = String(Math.floor(sec / 3600)).padStart(2, "0");
-  const m = String(Math.floor((sec % 3600) / 60)).padStart(2, "0");
-  const s = String(sec % 60).padStart(2, "0");
-  return `${h} : ${m} : ${s}`;
-}
+const formatTime = (sec) =>
+    `${String(Math.floor(sec / 3600)).padStart(2, "0")} : ` +
+    `${String(Math.floor((sec % 3600) / 60)).padStart(2, "0")} : ` +
+    `${String(sec % 60).padStart(2, "0")}`;
 
 const startCountdown = () => {
-  if (timerInterval) return; // 중복 방지
-
   timerInterval = setInterval(() => {
     if (totalSeconds.value <= 0) {
       clearInterval(timerInterval);
-      timerInterval = null;
-      endGame(); // 시간 끝나면 자동 종료
+      endGame();
       return;
     }
-
     totalSeconds.value--;
     timer.value = formatTime(totalSeconds.value);
   }, 1000);
 };
 
-
-// ========= START GAME ==========
 const startGame = async () => {
   try {
-    const res = await api.post(`/api/v1/game-session/start`)
-    console.log("게임 시작 성공, sessionId:", res.data)
+    const res = await api.post(`/api/v1/game-session/start`);
+    sessionId.value = res.data.data;
+    console.log("세션 ID 발급:", sessionId.value);
 
-    isGameActive.value = true  // 🔥 시작 버튼 비활성화
-    totalSeconds.value = 600
-    timer.value = formatTime(600)
-    startCountdown()
+    isGameActive.value = true;
+    totalSeconds.value = 600;
+    timer.value = formatTime(600);
+    startCountdown();
 
-  } catch (e) {
-    console.error("게임 시작 실패", e)
-  }
-}
-// ========= END GAME (API 호출) ==========
-const endGame = async () => {
-  try {
-    const res = await api.post(`/api/v1/game-session/end`)
-    console.log("게임 종료 응답:", res.data)
-
-    const result = res.data.data;
-
-    clearInterval(timerInterval)
-    timerInterval = null
-
-    totalSeconds.value = 600
-    timer.value = formatTime(600)
-
-    isGameActive.value = false  // 🔥 시작 버튼 다시 활성화
-
-    emit("open-modal", result)
+    // STOMP 연결 + 내 sessionId 설정
+    rankStore.connectStomp(sessionId.value);
 
   } catch (e) {
-    console.error("게임 종료 실패", e)
+    console.error("게임 시작 실패", e);
   }
-}
-
-// 종료 버튼 클릭 시
-const emitEnd = () => {
-  endGame();
 };
 
-// Mock 화면용 데이터
+const endGame = async () => {
+  try {
+    const res = await api.post(`/api/v1/game-session/end`);
+    emit("open-modal", res.data.data);
+
+    clearInterval(timerInterval);
+    totalSeconds.value = 600;
+    timer.value = formatTime(600);
+    isGameActive.value = false;
+  } catch (e) {
+    console.error("게임 종료 실패", e);
+  }
+};
+
+const emitEnd = () => endGame();
+
+// 더미 데이터 (API 완성 시 제거)
 const holdings = ref([
   { id: 1, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
-  { id: 2, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" }
-])
+  { id: 2, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
+]);
 
-const ranking = ref([
-  { rank: 1, nickname: "최지원", total: "11,350,000" },
-  { rank: 2, nickname: "박규진", total: "11,340,000" },
-  { rank: 3, nickname: "김진", total: "9,340,000" },
-  { rank: 455, nickname: "강성현", total: "340,000" },
-  { rank: 456, nickname: "정동욱", total: "240,000" },
-  { rank: 457, nickname: "야무께", total: "140,000" },
-])
+onMounted(() => {
+  rankStore.loadRanking(api);
+});
 </script>
-
-
-<style scoped>
-</style>

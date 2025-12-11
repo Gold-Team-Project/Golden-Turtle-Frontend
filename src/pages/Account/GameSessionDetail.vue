@@ -24,6 +24,11 @@ const loadPage = (newPage = 1) => {
   accountStore.loadTrades(sessionId, newPage)
 }
 
+const formatDateTime = (v) => {
+  if (!v) return '-'
+  return String(v).replace('T', ' ')
+}
+
 onMounted(() => {
   loadPage(1)
 })
@@ -39,19 +44,19 @@ onMounted(() => {
         <div class="cell">거래 ID</div>
         <div class="cell">종목 코드</div>
         <div class="cell">타입</div>
-        <div class="cell right">가격</div>
-        <div class="cell right">수량</div>
+        <div class="cell">가격</div>
+        <div class="cell">수량</div>
         <div class="cell">체결시간</div>
       </div>
 
       <!-- Data -->
       <div v-for="t in trades" :key="t.tradeId" class="row">
         <div class="cell">{{ t.tradeId }}</div>
-        <div class="cell">{{ t.stockCode }}</div>
-        <div class="cell">{{ t.tradeType }}</div>
-        <div class="cell right">{{ formatMoney(t.price) }}</div>
-        <div class="cell right">{{ t.quantity }}</div>
-        <div class="cell">{{ t.conclusion_time }}</div>
+        <div class="cell">{{ t.stock.ticker }}</div>
+        <div class="cell">{{ t.side }}</div>
+        <div class="cell">{{ formatMoney(t.price) }}</div>
+        <div class="cell">{{ t.quantity }}</div>
+        <div class="cell">{{ formatDateTime(t.createdAt) }}</div>
       </div>
 
       <!-- Empty State -->
@@ -120,10 +125,7 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cell.right {
-  text-align: right;
-  padding-right: 16px;
-}
+
 .empty {
   border: 3px solid #514626;
   border-radius: 5px;
