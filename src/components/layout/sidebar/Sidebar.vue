@@ -26,36 +26,12 @@
 
       <p class="section-title-bold">잔고</p>
       <div class="card-panel balance-panel">
-        $10,000
+        {{cashBalance}}$
       </div>
     </div>
+    <p class="section-title-bold">보유 현황</p>
+    <Sidebarholdings />
 
-    <!-- 보유 현황 -->
-    <div class="sidebar-middle">
-      <p class="section-title-bold">보유 현황</p>
-
-      <div class="card-panel holding-panel">
-        <div class="holding-header">
-          <span>종목명</span>
-          <span>수량</span>
-          <span>평균단가</span>
-        </div>
-
-        <div
-            v-for="item in holdings"
-            :key="item.id"
-            class="holding-row"
-        >
-          <div>
-            <p class="holding-name">{{ item.name }}</p>
-            <p class="holding-ticker">{{ item.ticker }}</p>
-          </div>
-
-          <p class="holding-mid">{{ item.quantity }}</p>
-          <p class="holding-price-final">$ {{ item.avgPrice }}</p>
-        </div>
-      </div>
-    </div>
 
     <!-- 현재 순위 -->
     <div>
@@ -108,16 +84,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import CommonButton from "@/components/common/button/CommonButton.vue";
 import "@/assets/sidebar/Sidebar.css";
+import {onMounted, ref} from "vue"
+import { useAccountStore } from '@/stores/Account.js'
+import { storeToRefs } from 'pinia'
+import CommonButton from "@/components/common/button/CommonButton.vue"
+import Sidebarholdings from "@/components/layout/sidebar/Sidebarholdings.vue"
+import "@/assets/sidebar/Sidebar.css"
 import api from "@/api/axios";
+
+const emit = defineEmits(["open-modal"])
+const isGameActive = ref(false)
+const accountStore = useAccountStore()
+// ========= TIMER ==========
+const totalSeconds = ref(600); // 10분 = 600초
 import { useRankStore } from "@/stores/rank.js";
 
-const emit = defineEmits(["open-modal"]);
 const rankStore = useRankStore();
 
-const isGameActive = ref(false);
 const sessionId = ref(null);
 
 // 천단위 콤마
@@ -125,9 +109,10 @@ const formatNumber = (n) =>
     n?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? "0";
 
 // ===== 타이머 =====
-const totalSeconds = ref(600);
 const timer = ref("00 : 10 : 00");
 let timerInterval = null;
+
+const { cashBalance} = storeToRefs(accountStore)
 
 const formatTime = (sec) =>
     `${String(Math.floor(sec / 3600)).padStart(2, "0")} : ` +
@@ -188,6 +173,15 @@ const startGame = async () => {
 
 const emitEnd = () => endGame();
 
+const loadPage = () => {
+  accountStore.loadCashBalance()
+}
+
+onMounted(() => {
+  loadPage()
+})
+
+// Mock 화면용 데이터
 // ===== 보유 현황 더미 =====
 const holdings = ref([
   { id: 1, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },

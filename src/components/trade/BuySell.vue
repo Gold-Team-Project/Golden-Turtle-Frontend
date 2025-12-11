@@ -163,27 +163,32 @@ function submitOrder() {
 <style scoped>
 /* 기본적인 스타일링 */
 .order-form-container {
-  max-width: 18.6%;
-  margin: 20px auto;
-  padding: 20px;
+  width: 100%;
+  padding: 10px; /* Reduced padding */
   border: 1px solid #5C4F2B;
   background-color: #2A2515; /* 이미지의 어두운 배경색 반영 */
   border-radius: 8px;
   color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-fields-area {
+    flex-grow: 1;
 }
 
 /* 상단 토글 버튼 스타일 */
 .top-toggle-buttons {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 10px; /* Reduced margin */
   gap: 10px;
 }
 .toggle-btn {
   flex: 1;
-  padding: 10px 0;
+  padding: 8px 0; /* Reduced padding */
   border: none;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 14px; /* Reduced font size */
   font-weight: bold;
   cursor: pointer;
   background-color: #555;
@@ -203,23 +208,23 @@ function submitOrder() {
 
 /* 입력 필드 그룹 스타일 */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 10px; /* Reduced margin */
 }
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: 12px; /* Reduced font size */
   color: #ccc;
-  margin-bottom: 5px;
+  margin-bottom: 3px; /* Reduced margin */
 }
 .form-group input {
   width: 100%;
-  padding: 12px;
+  padding: 8px; /* Reduced padding */
   border: 1px solid #5C4F2B;
   border-radius: 4px;
   box-sizing: border-box;
   background-color: #332C19; /* 이미지의 어두운 입력 필드 배경색 반영 */
   color: white;
-  font-size: 16px;
+  font-size: 14px; /* Reduced font size */
 }
 
 /* 읽기 전용 필드 (Disabled) 스타일 */
@@ -232,13 +237,13 @@ function submitOrder() {
 /* 하단 실행 버튼 스타일 */
 .execute-btn {
   width: 100%;
-  padding: 15px 0;
+  padding: 10px 0; /* Reduced padding */
   border: none;
   border-radius: 6px;
-  font-size: 18px;
+  font-size: 16px; /* Reduced font size */
   font-weight: bold;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 10px; /* Reduced margin */
   transition: background-color 0.3s;
 }
 .buy-button {
