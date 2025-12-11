@@ -9,6 +9,7 @@ import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
 import FindPasswordView from '@/views/auth/FindPasswordView.vue';
 import AdminStockManager from "@/views/admin/AdminStockManager.vue";
+import Portfolio from "@/pages/Account/Portfolio.vue";
 import MyPageView from "@/views/mypage/MyPageView.vue"; // Import MyPageView
 
 const routes = [
@@ -61,6 +62,12 @@ const routes = [
                 path: 'gamesession/:sessionId/detail',
                 name: 'gamesession-detail',
                 component: GameSessionDetail
+            },
+            //Portfolio 페이지
+            {
+                path: 'portfolio',
+                name: 'portfolio',
+                component: Portfolio
             }
             // 필요하면 여기에 다른 MainLayout 페이지들 추가
         ]
