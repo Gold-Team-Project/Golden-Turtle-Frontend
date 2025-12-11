@@ -1,3 +1,6 @@
+/* ===========================
+   SIDEBAR 기본 레이아웃
+=========================== */
 .sidebar-wrapper {
     width: 272px;
     min-width: 272px;
@@ -36,6 +39,9 @@
     background: #e8c96d;
 }
 
+/* ===========================
+   TIMER
+=========================== */
 .timer-text {
     font-size: 26px;
     text-align: center;
@@ -59,12 +65,25 @@
     color: white !important;
 }
 
+.btn-disabled {
+    background: #555 !important;
+    color: #ccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* ===========================
+   SECTION TITLE
+=========================== */
 .section-title-bold {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 4px;
 }
 
+/* ===========================
+   HOLDING PANEL
+=========================== */
 .sidebar-middle {
     flex-grow: 1;
     display: flex;
@@ -126,6 +145,9 @@
     font-weight: 600;
 }
 
+/* ===========================
+   RANKING PANEL (NEW)
+=========================== */
 .ranking-panel {
     background: #3a3528;
     border-radius: 12px;
@@ -135,6 +157,7 @@
             inset 0 0 8px rgba(0,0,0,0.55),
             0 0 0 2px rgba(80,74,61,0.7);
     height: auto;
+    /* 내용이 많으면 스크롤 없이 늘어나도록 설정됨. 필요시 max-height 추가 */
 }
 
 .rank-item {
@@ -142,18 +165,88 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
+    padding: 2px 4px; /* 가독성 확보 */
+    border-radius: 4px; /* 애니메이션 시 배경 효과 이쁘게 */
+    transition: all 0.25s ease-out;
+}
+
+.rank-left-col {
+    display: flex;
+    align-items: center;
 }
 
 .rank-low {
-    opacity: 0.75;
+    opacity: 0.85; /* 가독성을 위해 투명도 조절 */
 }
 
+/* 구분선 (•••) */
 .rank-dots {
     text-align: center;
     opacity: 0.6;
-    margin: 6px 0;
+    margin: 4px 0;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
 
+/* 4등 이하 숫자 스타일 */
+.rank-number {
+    display: inline-block;
+    width: 32px; /* 숫자 자리 확보 */
+    font-weight: bold;
+    color: #e8c96d; /* 골드 느낌 */
+}
+
+.rank-nickname {
+    margin-left: 4px;
+    color: #fff;
+}
+
+/* (나) 배지 */
+.me-badge {
+    font-size: 0.85em;
+    color: #4caf50; /* 초록색 */
+    margin-left: 4px;
+    font-weight: 800;
+}
+
+.rank-money {
+    font-weight: 500;
+    color: #ddd;
+}
+
+/* ===========================
+   실시간 랭킹 애니메이션
+=========================== */
+
+/* 순위 상승: 초록빛 Glow + 배경 반짝임 */
+.rank-up-animation {
+    animation: rankUpEffect 1s ease-out;
+    background-color: rgba(43, 180, 74, 0.1); /* 배경색 살짝 */
+}
+
+@keyframes rankUpEffect {
+    0% { box-shadow: 0 0 0px rgba(0, 255, 149, 0.0); }
+    30% { box-shadow: 0 0 14px rgba(0, 255, 149, 0.8); transform: scale(1.02); }
+    100% { box-shadow: 0 0 0px rgba(0, 255, 149, 0.0); transform: scale(1); }
+}
+
+/* 순위 하락: 좌우 흔들림 + 붉은 배경 살짝 */
+.rank-down-animation {
+    animation: rankDownEffect 0.6s ease-out;
+    background-color: rgba(214, 62, 62, 0.1);
+}
+
+@keyframes rankDownEffect {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+}
+
+/* ===========================
+   CARD PANELS (공통)
+=========================== */
 .timer-panel,
 .balance-panel {
     background: #3a3528;
@@ -168,10 +261,3 @@
     justify-content: center;
     gap: 10px;
 }
-.btn-disabled {
-    background: #555 !important;
-    color: #ccc !important;
-    cursor: not-allowed !important;
-    opacity: 0.6;
-}
-
