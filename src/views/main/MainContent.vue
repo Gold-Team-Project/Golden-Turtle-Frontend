@@ -29,10 +29,15 @@
             :key="row.rank"
             class="ranking-row"
         >
-          <span>{{ row.rankIcon }}</span>
-          <span>{{ row.name }}</span>
+         <span>
+    <template v-if="row.rank === 1">🥇</template>
+    <template v-else-if="row.rank === 2">🥈</template>
+    <template v-else-if="row.rank === 3">🥉</template>
+    <template v-else>{{ row.rank }}</template>
+  </span>
+          <span>{{ row.nickname }}</span>
           <span class="right">${{ formatNumber(row.totalAsset) }}</span>
-          <span class="right">{{ row.returnRate }}%</span>
+          <span class="right">{{ row.totalReturn }}%</span>
         </div>
 
       </div>
@@ -49,38 +54,57 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import {ref, computed, onMounted, watch} from "vue"
 import Pagination from "@/components/common/paging/Pagination.vue"
 import "@/assets/main/MainContent.css"
+import api from "@/api/axios"
 
-/* ---- 데이터 ---- */
-const ranking = ref([
-  { rank: 1, rankIcon: "🥇", name: "최지원", totalAsset: 11350000, returnRate: 11350 },
-  { rank: 2, rankIcon: "🥈", name: "박규진", totalAsset: 11340000, returnRate: 11340 },
-  { rank: 3, rankIcon: "🥉", name: "김진", totalAsset: 9340000, returnRate: 9340 },
-  ...Array.from({ length: 50 }).map((_, i) => ({
-    rank: i + 4,
-    rankIcon: "🏅",
-    name: `유저${i + 4}`,
-    totalAsset: 1200000 + i * 10000,
-    returnRate: 150 + i
-  }))
-])
+/* ---- 랭킹 데이터 ---- */
+const ranking = ref([])
+
+/* ---- Pagination ---- */
+const rowsPerPage = 7 // 서버 size와 맞추면 좋음
+const currentPage = ref(1)
+const totalPages = ref(1)
 
 /* 숫자 포맷 */
 const formatNumber = (num) =>
-    num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-/* PAGINATION */
-const rowsPerPage = 5
-const currentPage = ref(1)
+/* ---- API 호출 함수 ---- */
+const fetchRanking = async () => {
+  try {
+    const res = await api.get("/api/v1/ranking", {
+      params: {
+        page: currentPage.value,
+        size: rowsPerPage
+      }
+    });
 
-const totalPages = computed(() =>
-    Math.ceil(ranking.value.length / rowsPerPage)
-)
+    const data = res.data.data; // ApiResponse의 data 리스트
+    ranking.value = data;
 
+    // 총 페이지수를 서버에서 내려주지 않으므로 임시 계산 (실제로는 totalCount 필요)
+    totalPages.value = Math.ceil(data.length / rowsPerPage);
+
+    console.log("랭킹 데이터:", data);
+  } catch (err) {
+    console.error("랭킹 조회 실패:", err);
+  }
+};
+
+/* 페이지 바뀔 때마다 새 데이터 가져오기 */
+watch(currentPage, () => {
+  fetchRanking();
+});
+
+/* 첫 로딩 시 API 호출 */
+onMounted(() => {
+  fetchRanking();
+});
+
+/* 현재 페이지 데이터 (서버 페이징 안 쓰는 경우) */
 const paginatedRows = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage
-  return ranking.value.slice(start, start + rowsPerPage)
-})
+  return ranking.value; // 서버에서 이미 페이지로 잘라서 내려옴
+});
 </script>

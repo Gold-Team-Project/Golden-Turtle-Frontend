@@ -27,7 +27,7 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isLoggedIn: (state) => !!state.accessToken,
-    isAdmin: (state) => state.user?.auth === 'ROLE_ADMIN', // JWT payload의 'auth' 필드를 확인
+    isAdmin: (state) => state.user?.role === 'ADMIN', // JWT payload의 'role' 필드를 확인
   },
 
   actions: {
@@ -97,7 +97,12 @@ export const useAuthStore = defineStore('auth', {
         }
       } catch (error) {
         console.error('Login error:', error);
-        alert('이메일 또는 비밀번호가 잘못되었습니다.');
+
+        if (error.response && error.response.status === 403) {
+            alert('비활성화된 계정이거나 접근 권한이 없습니다.')
+        } else {
+            alert('이메일 또는 비밀번호가 잘못되었습니다.');
+        }
         return false;
       }
     },

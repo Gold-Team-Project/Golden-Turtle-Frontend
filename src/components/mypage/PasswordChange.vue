@@ -132,6 +132,7 @@ const handlePasswordChange = async (formEl) => {
 }
 .form-wrapper {
   max-width: 500px;
+  margin: 0 auto; /* Center the container */
 }
 .section-title {
   color: #fff;
