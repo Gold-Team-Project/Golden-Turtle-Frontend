@@ -23,3 +23,9 @@ export async function fetchHoldingsByUserId(page = 1, size = 10) {
     console.log(res.data.data)
     return res.data.data
 }
+
+export async function fetchCashBalanceByUserId() {
+    const res = await api.get('api/v1/balance')
+    console.log(res.data.data)
+    return res.data.data
+}
