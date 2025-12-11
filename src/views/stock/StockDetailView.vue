@@ -7,27 +7,27 @@
           <div class="stock-info-box">
             <div class="info-cell">
               <div class="label">고가</div>
-              <div class="value">$10,000</div>
+              <div class="value">{{ stockData?.h }}</div>
             </div>
             <div class="info-cell">
               <div class="label">저가</div>
-              <div class="value">$9,800</div>
+              <div class="value">{{ stockData?.l }}</div>
             </div>
             <div class="info-cell">
               <div class="label">시초가(당일)</div>
-              <div class="value">$9,900</div>
+              <div class="value">{{ stockData?.o }}</div>
             </div>
             <div class="info-cell">
               <div class="label">전일 종가</div>
-              <div class="value">$9,850</div>
+              <div class="value">{{ stockData?.pc }}</div>
             </div>
             <div class="info-cell">
               <div class="label">전일 대비</div>
-              <div class="value">+$150</div>
+              <div class="value">{{ stockData ? (stockData.o - stockData.pc).toFixed(2) : '' }}</div>
             </div>
             <div class="info-cell">
               <div class="label">증감 비율</div>
-              <div class="value">+1.52%</div>
+              <div class="value">{{ stockData?.dp.toFixed(2) }}%</div>
             </div>
           </div>
         </div>
@@ -56,14 +56,45 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import StockCandleChart from '@/components/stock/StockCandleChart.vue';
 import BuySell from '@/components/trade/BuySell.vue';
+import { getStockDetail } from '@/api/StockApi.js';
 
-defineProps({
+const props = defineProps({
   symbol: {
     type: String,
     required: true,
   },
+});
+
+const stockData = ref(null);
+
+onMounted(async () => {
+  try {
+    const fullSymbol = props.symbol; // e.g., BINANCE:XRPUSDT
+    const parts = fullSymbol.split(':');
+    let parsedSymbol = '';
+
+    if (parts.length > 1) {
+      parsedSymbol = parts[1]; // e.g., XRPUSDT
+      // Remove USDT or USDC from the end
+      if (parsedSymbol.endsWith('USDT')) {
+        parsedSymbol = parsedSymbol.slice(0, -4);
+      } else if (parsedSymbol.endsWith('USDC')) {
+        parsedSymbol = parsedSymbol.slice(0, -4);
+      }
+    } else {
+      parsedSymbol = fullSymbol; // Fallback if no market prefix
+    }
+
+    const response = await getStockDetail(parsedSymbol);
+    if (response.success) {
+      stockData.value = response.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch stock detail:', error);
+  }
 });
 </script>
 
@@ -136,6 +167,7 @@ defineProps({
   border-radius: 8px;
   padding: 0.5rem;
   text-align: center;
+  border: 1px solid, #5C4F2B;
 }
 
 .info-cell .label {
@@ -170,6 +202,7 @@ defineProps({
   border-radius: 8px;
   padding: 0.5rem;
   text-align: center;
+  border: 1px solid, #5C4F2B;
 }
 
 .info-cell-vertical .label {

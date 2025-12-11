@@ -1,7 +1,7 @@
 <template>
   <div class="stock-chart-wrapper">
     <div class="chart-header">
-      <h2 class="stock-symbol">{{ symbol }}</h2>
+      <h2 class="stock-symbol">{{ parsedSymbol }}</h2>
       <h3 class="current-price">${{ currentPrice.toFixed(2) }}</h3>
       <p class="price-change" :class="{ 'positive': priceChange >= 0, 'negative': priceChange < 0 }">
         {{ priceChangeFormatted }}
@@ -14,7 +14,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { createChart, CandlestickSeries, HistogramSeries, PriceScaleMode } from 'lightweight-charts';
-import { useStockStore } from '@/stores/stock'; // Import Pinia store
+import { useStockStore } from '@/stores/stock';
+import { getStockDetail } from '@/api/StockApi';
+import { getCryptoHistory } from '@/api/CryptoApi';
 
 // --- Props ---
 const props = defineProps({
@@ -23,6 +25,8 @@ const props = defineProps({
     required: true,
   },
 });
+
+const parsedSymbol = ref('');
 
 // --- Pinia Store ---
 const stockStore = useStockStore();
@@ -33,10 +37,10 @@ let chart = null;
 let candleSeries = null;
 let volumeSeries = null;
 const OHLCV_data = {};
-const INTERVAL_SECONDS = 5; // 1-minute interval
+const INTERVAL_SECONDS = 5; // 5-second interval
 
 // --- Price display ---
-const openingPrice = ref(170.00); // Dummy opening price
+const openingPrice = ref(0); // Initialize with 0
 const currentPrice = ref(0);
 
 const priceChange = computed(() => {
@@ -49,8 +53,69 @@ const priceChangeFormatted = computed(() => {
   return `${sign}${priceChange.value.toFixed(2)}%`;
 });
 
+// --- Chart Data Handling ---
+function processHistory(history) {
+  history.forEach(trade => {
+    const price = trade.price;
+    const timeInSeconds = Math.floor(trade.timestamp / 1000);
+    const candleTimeKey = timeInSeconds - (timeInSeconds % INTERVAL_SECONDS);
+
+    let candle = OHLCV_data[candleTimeKey];
+    if (!candle) {
+      candle = {
+        time: candleTimeKey,
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+        volume: 0, // No volume data in history, assume 0 for simplicity
+      };
+      OHLCV_data[candleTimeKey] = candle;
+    } else {
+      candle.high = Math.max(candle.high, price);
+      candle.low = Math.min(candle.low, price);
+      candle.close = price; // Update close with the latest price in the interval
+    }
+  });
+}
+
 // --- Chart Initialization ---
-onMounted(() => {
+onMounted(async () => {
+  // --- Symbol Parsing and Initial Data Fetch ---
+  try {
+    const fullSymbol = props.symbol;
+    const parts = fullSymbol.split(':');
+
+    if (parts.length > 1) {
+      let symbolPart = parts[1];
+      if (symbolPart.endsWith('USDT')) {
+        parsedSymbol.value = symbolPart.slice(0, -4);
+      } else if (symbolPart.endsWith('USDC')) {
+        parsedSymbol.value = symbolPart.slice(0, -4);
+      } else {
+        parsedSymbol.value = symbolPart;
+      }
+    } else {
+      parsedSymbol.value = fullSymbol;
+    }
+
+    const [detailResponse, historyResponse] = await Promise.all([
+      getStockDetail(parsedSymbol.value),
+      getCryptoHistory(parsedSymbol.value)
+    ]);
+
+    if (detailResponse.success) {
+      openingPrice.value = detailResponse.data.o;
+    }
+     if (historyResponse.success) {
+      processHistory(historyResponse.data);
+    }
+
+  } catch (error) {
+    console.error('Failed to fetch initial chart data:', error);
+  }
+
+  // --- Chart Setup ---
   if (chartContainer.value) {
     chart = createChart(chartContainer.value, {
       layout: {
@@ -84,19 +149,29 @@ onMounted(() => {
     volumeSeries = chart.addSeries(HistogramSeries, {
       color: '#26a69a',
       priceFormat: { type: 'volume' },
-      priceScaleId: 'volume_scale', // Use a specific ID
-      pane: 1, // Use pane: 1 to create a new pane below
+      priceScaleId: 'volume_scale',
+      pane: 1,
     });
 
-    // Configure the volume scale
     chart.priceScale('volume_scale').applyOptions({
       mode: PriceScaleMode.Logarithmic,
-      // Adjust margins WITHIN the volume pane to make bars shorter
       scaleMargins: {
-        top: 0.9, // 90% margin from the top, makes the bars very short
+        top: 0.9,
         bottom: 0,
       },
     });
+
+    // --- Set Initial Data ---
+    const allCandleData = Object.values(OHLCV_data).map(c => ({time: c.time, open: c.open, high: c.high, low: c.low, close: c.close})).sort((a,b) => a.time - b.time);
+    const allVolumeData = Object.values(OHLCV_data).map(c => ({time: c.time, value: c.volume, color: c.open <= c.close ? '#26a69a' : '#ef5350'})).sort((a,b) => a.time - b.time);
+
+    candleSeries.setData(allCandleData);
+    volumeSeries.setData(allVolumeData);
+    
+    if (allCandleData.length > 0) {
+        currentPrice.value = allCandleData[allCandleData.length-1].close
+    }
+
 
     // --- Watch for real-time data from Pinia store ---
     watch(() => stockStore.latestTrades[props.symbol], (newTrade) => {
@@ -109,46 +184,43 @@ onMounted(() => {
   }
 });
 
-// --- Chart Data Handling ---
 function addTrade(trade) {
   const price = trade.p;
   const volume = trade.v;
   const timeInSeconds = Math.floor(trade.t / 1000);
   const candleTimeKey = timeInSeconds - (timeInSeconds % INTERVAL_SECONDS);
 
-  // Update current price
   currentPrice.value = price;
 
   let candle = OHLCV_data[candleTimeKey];
   if (!candle) {
+    // To get the last close price for the new candle's open
+    const candleKeys = Object.keys(OHLCV_data).sort();
+    const lastCandleKey = candleKeys[candleKeys.length - 1];
+    const lastCandle = OHLCV_data[lastCandleKey];
+    const openPrice = lastCandle ? lastCandle.close : price;
+
     candle = {
       time: candleTimeKey,
-      open: price,
+      open: openPrice,
       high: price,
       low: price,
       close: price,
       volume: volume,
     };
     OHLCV_data[candleTimeKey] = candle;
-    
-    const allCandleData = Object.values(OHLCV_data).map(c => ({time: c.time, open: c.open, high: c.high, low: c.low, close: c.close})).sort((a,b) => a.time - b.time);
-    const allVolumeData = Object.values(OHLCV_data).map(c => ({time: c.time, value: c.volume, color: c.open <= c.close ? '#26a69a' : '#ef5350'})).sort((a,b) => a.time - b.time);
-    
-    candleSeries.setData(allCandleData);
-    volumeSeries.setData(allVolumeData);
-
   } else {
     candle.high = Math.max(candle.high, price);
     candle.low = Math.min(candle.low, price);
     candle.close = price;
     candle.volume += volume;
-
-    const candleData = { time: candle.time, open: candle.open, high: candle.high, low: candle.low, close: candle.close };
-    const volumeData = { time: candle.time, value: candle.volume, color: candle.open <= candle.close ? '#26a69a' : '#ef5350' };
-    
-    candleSeries.update(candleData);
-    volumeSeries.update(volumeData);
   }
+  
+  const candleData = { time: candle.time, open: candle.open, high: candle.high, low: candle.low, close: candle.close };
+  const volumeData = { time: candle.time, value: candle.volume, color: candle.open <= candle.close ? '#26a69a' : '#ef5350' };
+
+  candleSeries.update(candleData);
+  volumeSeries.update(volumeData);
 }
 
 // --- Component Cleanup ---
