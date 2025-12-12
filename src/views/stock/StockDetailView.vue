@@ -37,29 +37,33 @@
           <div class="account-info-box">
             <div class="info-cell-vertical">
               <div class="label">총자산</div>
-              <div class="value">000,000,000.00</div>
+              <div class="value">${{ formatNumber(userTotalAssets) }}</div>
             </div>
             <div class="info-cell-vertical">
               <div class="label">평가 손익</div>
-              <div class="value">000,000.00</div>
+              <div class="value">${{ formatNumber(userProfitAndLoss) }}</div>
             </div>
             <div class="info-cell-vertical">
               <div class="label">수익률</div>
-              <div class="value">0.00%</div>
+              <div class="value">{{ formatNumber(userReturnRate) }}%</div>
             </div>
           </div>
         </div>
-        <div class="gt-box gt-box-4"><BuySell/></div>
+        <div class="gt-box gt-box-4"><BuySell :currentPrice="currentPrice" :stockSymbol="stockSymbolForBuySell" /></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import StockCandleChart from '@/components/stock/StockCandleChart.vue';
 import BuySell from '@/components/trade/BuySell.vue';
 import { getStockDetail } from '@/api/StockApi.js';
+import { useStockStore } from '@/stores/stock';
+import { useTradeStore } from '@/stores/trade';
+import { useAccountStore } from '@/stores/Account';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   symbol: {
@@ -69,31 +73,101 @@ const props = defineProps({
 });
 
 const stockData = ref(null);
+const stockStore = useStockStore();
+const tradeStore = useTradeStore();
+const accountStore = useAccountStore();
+
+const { cashBalance } = storeToRefs(accountStore);
+const { userHoldings } = storeToRefs(tradeStore);
+
+// Helper function to format numbers with commas and decimals
+const formatNumber = (num, decimals = 2) => {
+  if (typeof num !== 'number') return '0.00';
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
+
+// BuySell 컴포넌트에 넘겨줄 종목 심볼 (BINANCE:DOGEUSDT -> DOGE)
+const stockSymbolForBuySell = computed(() => {
+  const fullSymbol = props.symbol;
+  const parts = fullSymbol.split(':');
+  let parsedSymbol = '';
+
+  if (parts.length > 1) {
+    parsedSymbol = parts[1];
+    if (parsedSymbol.endsWith('USDT')) {
+      parsedSymbol = parsedSymbol.slice(0, -4);
+    } else if (parsedSymbol.endsWith('USDC')) {
+      parsedSymbol = parsedSymbol.slice(0, -4);
+    }
+  } else {
+    parsedSymbol = fullSymbol;
+  }
+  return parsedSymbol;
+});
+
+// WebSocket key를 위한 전체 심볼 (예: BINANCE:DOGEUSDT)
+const fullWebSocketSymbol = computed(() => {
+  // 이 부분은 라우팅 방식에 따라 달라질 수 있으나, 현재는 crypto로 가정
+  // stock.market이 있다면 그것을 사용하는 것이 더 정확함.
+  return `BINANCE:${stockSymbolForBuySell.value.toUpperCase()}USDT`;
+});
+
+// 실시간 현재가 (stockStore에서 가져옴)
+const currentPrice = computed(() => {
+  const latestTrade = stockStore.latestTrades[fullWebSocketSymbol.value];
+  return latestTrade ? latestTrade.p : 0; // 최신 가격 없으면 0
+});
+
+const userTotalAssets = computed(() => {
+  let totalHoldingsValue = 0;
+  if (userHoldings.value) {
+    userHoldings.value.forEach(holding => {
+      const stockCurrentPrice = stockStore.latestTrades[`BINANCE:${holding.ticker}USDT`]?.p || holding.avgPrice;
+      totalHoldingsValue += (holding.quantity * stockCurrentPrice);
+    });
+  }
+  return (cashBalance.value || 0) + totalHoldingsValue;
+});
+
+const userProfitAndLoss = computed(() => {
+  let totalInvested = 0;
+  let totalCurrentValue = 0;
+  if (userHoldings.value) {
+    userHoldings.value.forEach(holding => {
+      totalInvested += (holding.quantity * holding.avgPrice);
+      const stockCurrentPrice = stockStore.latestTrades[`BINANCE:${holding.ticker}USDT`]?.p || holding.avgPrice;
+      totalCurrentValue += (holding.quantity * stockCurrentPrice);
+    });
+  }
+  return totalCurrentValue - totalInvested;
+});
+
+const userReturnRate = computed(() => {
+  let totalInvested = 0;
+  if (userHoldings.value) {
+    userHoldings.value.forEach(holding => {
+      totalInvested += (holding.quantity * holding.avgPrice);
+    });
+  }
+  if (totalInvested === 0) return 0;
+  return (userProfitAndLoss.value / totalInvested) * 100;
+});
 
 onMounted(async () => {
   try {
-    const fullSymbol = props.symbol; // e.g., BINANCE:XRPUSDT
-    const parts = fullSymbol.split(':');
-    let parsedSymbol = '';
-
-    if (parts.length > 1) {
-      parsedSymbol = parts[1]; // e.g., XRPUSDT
-      // Remove USDT or USDC from the end
-      if (parsedSymbol.endsWith('USDT')) {
-        parsedSymbol = parsedSymbol.slice(0, -4);
-      } else if (parsedSymbol.endsWith('USDC')) {
-        parsedSymbol = parsedSymbol.slice(0, -4);
-      }
-    } else {
-      parsedSymbol = fullSymbol; // Fallback if no market prefix
-    }
-
-    const response = await getStockDetail(parsedSymbol);
+    const response = await getStockDetail(stockSymbolForBuySell.value);
     if (response.success) {
       stockData.value = response.data;
     }
+    
+    await accountStore.loadCashBalance();
+    await tradeStore.fetchHoldings();
+
   } catch (error) {
-    console.error('Failed to fetch stock detail:', error);
+    console.error('Failed to fetch initial page data:', error);
   }
 });
 </script>
@@ -202,7 +276,7 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 0.5rem;
   text-align: center;
-  border: 1px solid, #5C4F2B;
+  border: 1px solid #5C4F2B;
 }
 
 .info-cell-vertical .label {
