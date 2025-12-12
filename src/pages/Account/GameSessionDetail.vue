@@ -26,8 +26,10 @@ const loadPage = (newPage = 1) => {
 
 const formatDateTime = (v) => {
   if (!v) return '-'
-  return String(v).replace('T', ' ')
+  const s = String(v).replace('T', ' ')
+  return s.slice(0, 16)
 }
+
 
 onMounted(() => {
   loadPage(1)

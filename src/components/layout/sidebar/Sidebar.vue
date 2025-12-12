@@ -147,7 +147,7 @@ const startGame = async () => {
 
     startCountdown();
     rankStore.connectStomp(sessionId.value); // STOMP 연결
-
+    accountStore.loadCashBalance();
   } catch (e) {
     console.error("게임 시작 실패", e);
   }
@@ -160,6 +160,7 @@ const endGame = async () => {
 
     clearInterval(timerInterval);
 
+    cashBalance.value = 0;
     totalSeconds.value = 600;
     timer.value = formatTime(600);
     isGameActive.value = false;
