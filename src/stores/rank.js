@@ -2,8 +2,6 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import * as StompJs from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { useAuthStore } from "./auth"; // auth 스토어 임포트
-
 
 export const useRankStore = defineStore("rank", () => {
     const ranking = ref([]);
@@ -60,29 +58,15 @@ export const useRankStore = defineStore("rank", () => {
     // STOMP 연결
     const connectStomp = (sessionId) => {
         mySessionId.value = sessionId;
-        console.log("🔑 [RANK] 내 식별 세션 ID:", mySessionId.value);
+        console.log(":key: [RANK] 내 식별 세션 ID:", mySessionId.value);
 
         if (stompClient) {
             stompClient.deactivate();
         }
 
-        const authStore = useAuthStore();
-        if (!authStore.accessToken) {
-            console.error("[STOMP] 랭킹 소켓 연결 실패: 인증 토큰이 없습니다.");
-            // TODO: 로그인 페이지로 리다이렉트하거나 사용자에게 로그인 요청
-            return;
-        }
-
-        const socket = new SockJS("http://localhost:8080/ranking", null, {
-            headers: { // <-- 여기에 SockJS 초기 연결 헤더 추가
-                Authorization: `Bearer ${authStore.accessToken}`,
-            }
-        });
+        const socket = new SockJS("http://localhost:8080/ranking");
         stompClient = new StompJs.Client({
             webSocketFactory: () => socket,
-            connectHeaders: {
-                Authorization: `Bearer ${authStore.accessToken}`,
-            },
             reconnectDelay: 5000,
             debug: () => {},
         });
@@ -122,7 +106,7 @@ export const useRankStore = defineStore("rank", () => {
             console.log(`[RANK] 초기 랭킹 로드 완료 (${ranking.value.length}명)`);
 
         } catch (e) {
-            console.error("❌ [RANK] 초기 랭킹 조회 실패:", e);
+            console.error(":x: [RANK] 초기 랭킹 조회 실패:", e);
         }
     };
 
