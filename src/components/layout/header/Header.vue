@@ -2,7 +2,7 @@
   <header class="gt-header">
 
     <!-- Left Logo -->
-    <div class="gt-header-left">
+    <div class="gt-header-left" @click="goToMain">
       <img src="@/assets/GOLDENTURTLE.svg" alt="logo" class="gt-logo" />
       <span class="gt-title">Golden Turtle</span>
     </div>
@@ -11,7 +11,7 @@
     <nav class="gt-nav">
       <a href="/mypage">Mypage</a>
       <a @click="goHistory" href="#">History</a>
-      <a href="/market">Market</a>
+      <router-link to="/stocklist">Market</router-link>
       <a href="/Portfolio">Portfolio</a>
       <!-- Modified logout link to trigger handleLogout function -->
       <a @click.prevent="handleLogout" href="#">Logout</a>
@@ -35,5 +35,9 @@ const goHistory = () =>{
 
 const handleLogout = async () => {
   await authStore.logout();
+};
+
+const goToMain = () => {
+  router.push('/');
 };
 </script>
