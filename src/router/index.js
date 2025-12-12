@@ -30,6 +30,12 @@ const routes = [
         name: 'find-password',
         component: FindPasswordView,
     },
+    // 관리자 전용 페이지
+    {
+        path: '/adminstock',
+        name: 'adminstock',
+        component: AdminStockManager,
+    },
 
     // --- Authenticated Routes ---
     {
@@ -41,11 +47,11 @@ const routes = [
                 name: 'home',
                 component: MainContent,
             },
-            // 관리자 전용 페이지
+            // 마이페이지
             {
-                path: '/adminstock',
-                name: 'adminstock',
-                component: AdminStockManager,
+                path: '/mypage',
+                name: 'mypage',
+                component: MyPageView,
             },
             //Account 페이지
             {
