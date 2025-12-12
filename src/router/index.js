@@ -12,6 +12,7 @@ import AdminStockManager from "@/views/admin/AdminStockManager.vue";
 import Portfolio from "@/pages/Account/Portfolio.vue";
 import MyPageView from "@/views/mypage/MyPageView.vue";
 import StockDetailView from '@/views/stock/StockDetailView.vue';
+import StockListPage from '@/views/stock/StockListPage.vue';
 
 const routes = [
     // --- Public Routes ---
@@ -77,6 +78,12 @@ const routes = [
                 name: 'stock-detail',
                 component: StockDetailView,
                 props: true
+            },
+            // 종목 리스트 페이지
+            {
+                path: 'stocklist',
+                name: 'stock-list',
+                component: StockListPage
             },
         ]
     }

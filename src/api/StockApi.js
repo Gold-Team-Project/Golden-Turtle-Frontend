@@ -9,3 +9,23 @@ export const getStockDetail = async (symbol) => {
         throw error;
     }
 };
+
+export const getAllStocks = async () => {
+    try {
+        const response = await api.get(`/api/v1/stocks?size=100`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching all stocks:", error);
+        throw error;
+    }
+};
+
+export const getDailyPriceChanges = async () => {
+    try {
+        const response = await api.get('/api/v1/stock/dp');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching daily price changes:", error);
+        throw error;
+    }
+};
