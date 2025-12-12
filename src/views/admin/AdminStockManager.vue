@@ -3,10 +3,8 @@
   <div class="admin-page-container">
 
     <div class="content-header">
-      <h2 class="page-title">종목 추가</h2>
-      <button class="add-stock-btn" @click="openAddModal">
-        종목 추가
-      </button>
+      <h2 class="page-title">종목 관리</h2>
+      <!-- '종목 추가' 버튼 제거됨 -->
     </div>
 
     <div class="stock-list-wrapper">
@@ -20,7 +18,7 @@
               :class="{ 'active-sort': sortKey === header.key }"
           >
             {{ header.label }}
-            <span class="sort-icon">
+            <span class="sort-icon" v-if="header.sortable !== false">
               {{ sortKey === header.key ? (sortOrder === 1 ? '▲' : '▼') : '⮁' }}
             </span>
           </th>
@@ -33,13 +31,17 @@
           <td>{{ item.market }}</td>
           <td>{{ item.date }}</td>
           <td>{{ item.isOperate ? '운영' : '미운영' }}</td>
+          <td>
+            <button v-if="!item.isOperate" @click="handleActivateStock(item.code)" class="action-btn activate-btn">활성화</button>
+            <button v-else @click="handleDeactivateStock(item.code)" class="action-btn deactivate-btn">비활성화</button>
+          </td>
         </tr>
         </tbody>
       </table>
     </div>
 
     <div class="table-footer">
-      <span class="info-text">총 {{ stockList.length }}개 종목</span>
+      <span class="info-text">총 {{ stockStore.stocks.length }}개 종목</span>
       <div class="pagination">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">&lt;</button>
         <span>{{ currentPage }} / {{ totalPages }}</span>
@@ -47,26 +49,23 @@
       </div>
     </div>
   </div>
-  <AddStockModal
-      :isOpen="isModalOpen"
-      :existingStocks="stockList"
-      @update:isOpen="isModalOpen = $event"
-      @add-stock="handleStockAdded"
-  />
+  <!-- AddStockModal 제거됨 -->
 </template>
-
 <script>
 import Header from "@/components/layout/header/Header.vue";
-import AddStockModal from "@/components/modal/AddStockModal.vue";
-
+import { useStockStore } from "@/stores/stock"; // Pinia 스토어 임포트
 
 
 export default {
   name: 'AdminStockManager',
-  components: {Header, AddStockModal},
+  components: {Header}, // AddStockModal 제거
+  setup() {
+    const stockStore = useStockStore(); // 스토어 사용
+    return { stockStore }; // 템플릿에서 스토어에 접근할 수 있도록 노출
+  },
   data() {
     return {
-      isModalOpen: false,
+      // isModalOpen 제거
       // 테이블 헤더 정보 (key는 데이터 객체의 속성 이름과 일치해야 함)
       headers: [
         { key: 'code', label: '종목 코드' },
@@ -74,37 +73,34 @@ export default {
         { key: 'market', label: '종목 시장' },
         { key: 'date', label: '종목 등록일자' },
         { key: 'isOperate', label: '운영 여부' }, // data의 isOperate와 일치시킴
+        { key: 'manage', label: '관리', sortable: false }, // '관리' 열 추가
       ],
-      stockList: [
-        // 예시 데이터 (8개 초과하여 페이지네이션 테스트)
-        { code: 'BTC', name: '비트코인', market: '???', date: '2025-12-04', isOperate: true },
-        { code: 'ETH', name: '이더리움', market: '???', date: '2025-12-01', isOperate: true },
-        { code: 'XRP', name: '리플', market: '???', date: '2025-11-20', isOperate: false },
-        { code: 'ADA', name: '에이다', market: '???', date: '2025-12-10', isOperate: true },
-        { code: 'DOGE', name: '도지코인', market: '???', date: '2025-11-05', isOperate: true },
-        { code: 'SOL', name: '솔라나', market: '???', date: '2025-10-15', isOperate: false },
-        { code: 'LTC', name: '라이트코인', market: '???', date: '2025-12-08', isOperate: true },
-        { code: 'DOT', name: '폴카닷', market: '???', date: '2025-11-25', isOperate: true },
-        // 2페이지 항목
-        { code: 'AVAX', name: '아발란체', market: '???', date: '2025-12-02', isOperate: true },
-        { code: 'LINK', name: '체인링크', market: '???', date: '2025-11-15', isOperate: false },
-      ],
-      //️ 정렬 및 페이지네이션 상태 추가
+      // stockList는 Pinia 스토어에서 관리하므로 여기서는 삭제
+      // 정렬 및 페이지네이션 상태 추가
       sortKey: 'date',
       sortOrder: -1, // -1: 내림차순, 1: 오름차순 (기본: 최신 등록일 기준 내림차순)
-      itemsPerPage: 8, // 한 페이지에 8개 항목 표시
+      itemsPerPage: 6, // 한 페이지에 8개 항목 표시
       currentPage: 1,
     };
   },
   computed: {
+    // Pinia 스토어의 stocks를 사용
+    currentStocks() {
+      return this.stockStore.stocks;
+    },
     // 1. 정렬된 전체 목록을 반환
     sortedStocks() {
-      let sortedList = [...this.stockList];
+      let sortedList = [...this.currentStocks]; // 스토어의 stocks 사용
       const key = this.sortKey;
       const order = this.sortOrder;
 
       if (key) {
         sortedList.sort((a, b) => {
+          // 'manage' 열은 정렬에서 제외
+          if (key === 'manage') {
+            return 0;
+          }
+
           const aVal = a[key];
           const bVal = b[key];
 
@@ -130,22 +126,35 @@ export default {
     },
     // 3. 총 페이지 수 계산
     totalPages() {
-      return Math.ceil(this.stockList.length / this.itemsPerPage);
+      return Math.ceil(this.currentStocks.length / this.itemsPerPage); // 스토어의 stocks 사용
     }
   },
   methods: {
-    // openAddModal 수정
-    openAddModal() {
-      this.isModalOpen = true; // 모달을 열도록 상태 변경
+    // openAddModal 및 handleStockAdded 제거
+    async handleActivateStock(symbol) {
+      try {
+        await this.stockStore.activateStock(symbol);
+        console.log(`Stock with symbol ${symbol} activated successfully.`);
+      } catch (error) {
+        console.error(`Error activating stock with symbol ${symbol}:`, error);
+        alert(`종목 활성화 실패: ${error.message}`);
+      }
     },
-
-    // 모달에서 종목 추가 요청을 받을 메서드 (이전에 안내드렸던 내용)
-    handleStockAdded(newStock) {
-      this.stockList.push(newStock);
-      console.log('New stock added:', newStock.name);
+    async handleDeactivateStock(symbol) {
+      try {
+        await this.stockStore.deactivateStock(symbol);
+        console.log(`Stock with symbol ${symbol} deactivated successfully.`);
+      } catch (error) {
+        console.error(`Error deactivating stock with symbol ${symbol}:`, error);
+        alert(`종목 비활성화 실패: ${error.message}`);
+      }
     },
     //  정렬 기준 변경 기능 (sortBy)
     sortBy(key) {
+      // 'manage' 열은 정렬에서 제외
+      if (key === 'manage') {
+        return;
+      }
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder * -1; // 현재 기준이면 순서 반전
       } else {
@@ -161,6 +170,9 @@ export default {
       }
     }
   },
+  created() {
+    this.stockStore.fetchStockList(); // 컴포넌트 생성 시 종목 목록 로드
+  }
 };
 </script>
 
@@ -197,22 +209,6 @@ export default {
   margin: 0;
 }
 
-/* 종목 추가 버튼 */
-.add-stock-btn {
-  background-color: #ECB20F;
-  color: #542212;
-  border: none;
-  padding: 10px 30px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.add-stock-btn:hover {
-  background-color: #F2CA57;
-}
-
 /*
  * =======================================================
  * 2. 테이블 영역 및 스크롤 관리
@@ -222,7 +218,7 @@ export default {
 .stock-list-wrapper {
   width: 100%;
   max-width: 1090px;
-  height: 470px;
+  height: 450px;
   overflow-y: auto;
   border: 3px solid #5C4F2B;
   border-radius: 10px;
@@ -283,6 +279,41 @@ export default {
   padding: 15px 12px;
   font-size: 14px;
 }
+
+/*
+ * =======================================================
+ * 4. 활성화/비활성화 버튼 스타일
+ * =======================================================
+ */
+.action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 13px;
+  min-width: 70px; /* 버튼 최소 너비 설정 */
+}
+
+.activate-btn {
+  background-color: #28a745; /* Green for activate */
+  color: #ffffff;
+}
+
+.activate-btn:hover {
+  background-color: #218838;
+}
+
+.deactivate-btn {
+  background-color: #dc3545; /* Red for deactivate */
+  color: #ffffff;
+}
+
+.deactivate-btn:hover {
+  background-color: #c82333;
+}
+
 
 /*
  * =======================================================
