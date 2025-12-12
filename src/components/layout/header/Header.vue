@@ -2,7 +2,7 @@
   <header class="gt-header">
 
     <!-- Left Logo -->
-    <div class="gt-header-left">
+    <div class="gt-header-left" @click="goToMain">
       <img src="@/assets/GOLDENTURTLE.svg" alt="logo" class="gt-logo" />
       <span class="gt-title">Golden Turtle</span>
     </div>
@@ -35,5 +35,9 @@ const goHistory = () =>{
 
 const handleLogout = async () => {
   await authStore.logout();
+};
+
+const goToMain = () => {
+  router.push('/');
 };
 </script>

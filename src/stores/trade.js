@@ -47,7 +47,7 @@ export const useTradeStore = defineStore('trade', () => {
   const fetchHoldings = async (page = 0, size = 10) => {
     const gameSessionId = localStorage.getItem("gameSessionId");
     if (!gameSessionId) {
-      console.error('gameSessionId is not available in localStorage. Cannot fetch holdings.');
+      console.log('보유 종목은 게임시작 후 확인 가능합니다.');
       return;
     }
 
