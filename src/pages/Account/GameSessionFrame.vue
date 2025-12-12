@@ -20,6 +20,13 @@ const formatMoney = (v) => {
   return num.toLocaleString()
 }
 
+const formatDateTime = (v) => {
+  if (!v) return '-'
+  const s = String(v).replace('T', ' ')
+  return s.slice(0, 16)
+}
+
+
 const formatPercent = (v) => {
   if (v == null) return '-'
   const num = Number(v)
@@ -54,8 +61,8 @@ const goToDetail = (sessionId) => {
           @click="goToDetail(s.sessionId)"
       >
         <div class="cell">{{ s.sessionId }}</div>
-        <div class="cell">{{ s.startedAt }}</div>
-        <div class="cell">{{ s.endedAt }}</div>
+        <div class="cell">{{ formatDateTime(s.startedAt) }}</div>
+        <div class="cell">{{ formatDateTime(s.endedAt) }}</div>
         <div class="cell right">{{ formatMoney(s.finalAsset) }}</div>
         <div class="cell right">{{ formatPercent(s.totalReturn) }}</div>
       </div>

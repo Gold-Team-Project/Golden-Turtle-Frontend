@@ -31,6 +31,7 @@ export const useAccountStore = defineStore('account', () => {
             trades.value = data.trades ?? []
             totalPages.value = data.pagination?.totalPages ?? 1
             page.value = data.pagination?.currentPage ?? newPage
+            console.log(trades.value)
         } catch (error) {
             console.error('거래내역을 불러올 수 없습니다:', error)
         }
