@@ -41,6 +41,12 @@ const routes = [
                 name: 'home',
                 component: MainContent,
             },
+            // 마이페이지
+            {
+                path: '/mypage',
+                name: 'mypage',
+                component: MyPageView,
+            },
             // 관리자 전용 페이지
             {
                 path: '/adminstock',

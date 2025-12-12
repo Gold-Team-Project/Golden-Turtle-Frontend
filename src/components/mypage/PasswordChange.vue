@@ -128,26 +128,41 @@ const handlePasswordChange = async (formEl) => {
 
 <style scoped>
 .mypage-section {
-  margin-bottom: 50px;
+  margin-bottom: 60px;
 }
 .form-wrapper {
   max-width: 500px;
-  margin: 0 auto; /* Center the container */
+  margin: 0 auto;
 }
 .section-title {
-  color: #fff;
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
+  color: #f5eede;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(245, 238, 222, 0.1);
 }
 .action-btn {
-  background-color: #ffc933;
-  border-color: #ffc933;
+  width: 100%; /* Make button full width for a cleaner appearance */
+  background-color: #e4b13e;
+  border-color: #e4b13e;
+  color: #1c1710;
   font-weight: bold;
-  margin-left: auto; /* Push button to the right */
+}
+.action-btn:hover {
+  background-color: #f8c355;
+  border-color: #f8c355;
 }
 :deep(.el-form-item__label) {
-  color: white !important;
+  color: #d1c7b8 !important;
+  font-weight: 500;
 }
-/* .error-message is now handled by ElForm-Item default error message */
+:deep(.el-input__wrapper) {
+  background-color: #2b231a;
+  box-shadow: none;
+  border: 1px solid #4a4238;
+}
+:deep(.el-input__inner) {
+  color: #f5eede;
+}
 </style>
