@@ -181,7 +181,6 @@ const loadPage = () => {
 
 // Mock 화면용 데이터
 
-
 // ===== 새로고침 시 타이머 복구 =====
 onMounted(() => {
   loadPage()
