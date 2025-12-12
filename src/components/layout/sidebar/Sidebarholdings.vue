@@ -1,20 +1,19 @@
 <!-- src/components/SidebarHoldings.vue -->
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAccountStore } from '@/stores/Account.js'
-import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue';
+import { useTradeStore } from '@/stores/trade.js';
+import { storeToRefs } from 'pinia';
 
-const accountStore = useAccountStore()
-
-const { holdings } = storeToRefs(accountStore)
-
-const loadHoldings = (newPage = 1) => {
-  accountStore.loadHoldings(newPage)
-}
+const tradeStore = useTradeStore();
+const { userHoldings: holdings } = storeToRefs(tradeStore); // Rename for template compatibility
 
 onMounted(() => {
-  loadHoldings(1)
-})
+  // Data is now loaded by StockDetailView or a parent component
+  // This component will just reactively display it.
+  // If no game is active, fetchHoldings won't run, and holdings will be empty.
+  // We can still call it here as a fallback if needed.
+  tradeStore.fetchHoldings();
+});
 </script>
 
 <template>
@@ -37,8 +36,8 @@ onMounted(() => {
       >
         <!-- 1열: 종목명 / 티커 -->
         <div>
-          <p class="holding-name">{{ item.stock.ticker }}</p>
-          <p class="holding-ticker">{{ item.stock.ticker }}</p>
+          <p class="holding-name">{{ item.stockName }}</p>
+          <p class="holding-ticker">{{ item.ticker }}</p>
         </div>
 
         <!-- 2열: 수량 -->
@@ -48,7 +47,7 @@ onMounted(() => {
 
         <!-- 3열: 평균단가 -->
         <p class="holding-price-final">
-          ₩ {{ item.avgPrice }}
+          $ {{ item.avgPrice.toFixed(2) }}
         </p>
       </div>
     </div>

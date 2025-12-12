@@ -1,44 +1,29 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
-
     <div class="stock-add-modal">
-
       <div class="modal-header">
         <h3 class="modal-title">종목 추가</h3>
         <button class="close-btn" @click="closeModal">X</button>
       </div>
-
       <div class="modal-body">
-
-        <div class="search-container">
+        <div class="input-container">
           <input
               type="text"
               v-model="tickerCode"
-              @keyup.enter="searchStock"
-              placeholder="종목코드(티커) 검색"
+              @keyup.enter="addStock"
+              placeholder="추가할 종목의 티커(심볼)를 입력하세요"
               class="ticker-input"
+              ref="tickerInput"
           >
-          <button class="search-btn" @click="searchStock">
-            <span class="search-icon">🔍</span>
-          </button>
         </div>
-
-        <div v-if="searchResult.name" class="result-display">
-          <p><strong>조회된 종목:</strong> {{ searchResult.name }} ({{ searchResult.code }})</p>
-          <p v-if="isDuplicate" class="warning-text">이미 목록에 존재하는 종목입니다.</p>
-        </div>
-        <div v-else-if="searchAttempted && !searchResult.name" class="result-display">
-          <p class="warning-text">검색 결과가 없습니다.</p>
-        </div>
-
+        <p v-if="isDuplicate" class="warning-text">이미 목록에 존재하는 종목입니다.</p>
         <button
-            :disabled="!searchResult.name || isDuplicate"
+            :disabled="!tickerCode.trim() || isDuplicate"
             class="add-stock-action-btn"
-            @click="addStockToManager"
+            @click="addStock"
         >
           종목 추가
         </button>
-
       </div>
     </div>
   </div>
@@ -46,83 +31,56 @@
 
 <script>
 export default {
-  name: 'AdminStockAddModal',
+  name: 'AddStockModal',
   props: {
-    isOpen: { /* ... */ },
-    existingStocks: { /* ... */ }
+    isOpen: {
+      type: Boolean,
+      required: true,
+    },
+    existingStocks: {
+      type: Array,
+      default: () => []
+    }
   },
   data() {
     return {
       tickerCode: '',
-      searchResult: {
-        code: '',
-        name: '',
-        market: 'CRYPTO',
-        date: ''
-      },
-      searchAttempted: false,
     };
   },
   computed: {
     isDuplicate() {
-      if (!this.searchResult.code) return false;
-      return this.existingStocks.some(stock => stock.code === this.searchResult.code);
+      if (!this.tickerCode) return false;
+      const code = this.tickerCode.toUpperCase().trim();
+      return this.existingStocks.some(stock => stock.code === code);
     }
   },
   methods: {
-    // 1. 모달 닫기
     closeModal() {
-      // 부모 컴포넌트에 'isOpen' 상태를 false로 업데이트하라고 알림
       this.$emit('update:isOpen', false);
-      this.resetState(); // 폼 입력 내용 및 검색 결과 초기화
+      this.tickerCode = ''; // 모달 닫을 때 입력값 초기화
     },
+    addStock() {
+      const symbol = this.tickerCode.trim().toUpperCase();
+      if (!symbol || this.isDuplicate) return;
 
-    // 2. 모달 상태 초기화
-    resetState() {
-      this.tickerCode = '';
-      this.searchResult = { code: '', name: '', market: 'CRYPTO', date: '' };
-      this.searchAttempted = false;
+      // 부모에게 심볼(string)을 직접 전달
+      this.$emit('add-stock', symbol);
+      this.closeModal();
     },
-
-    // 3. 종목 검색 (더미 로직)
-    async searchStock() {
-      if (!this.tickerCode) return;
-      this.searchAttempted = true;
-      this.searchResult = { code: '', name: '', market: 'CRYPTO', date: '' };
-
-      const code = this.tickerCode.toUpperCase().trim();
-
-      let dummyData = null;
-      if (code === 'BTC') {
-        dummyData = { name: '비트코인', code: 'BTC' };
-      } else if (code === 'ETH') {
-        dummyData = { name: '이더리움', code: 'ETH' };
-      }
-
-      if (dummyData) {
-        this.searchResult = {
-          code: dummyData.code,
-          name: dummyData.name,
-          market: '???',
-          date: new Date().toISOString().split('T')[0],
-          isOperate: true,
-        };
-      }
-    },
-
-    // 4. 종목 추가 후 모달 닫기
-    addStockToManager() {
-      if (!this.searchResult.code || this.isDuplicate) return;
-
-      this.$emit('add-stock', this.searchResult);
-      this.closeModal(); // 추가 완료 후 모달 닫기
+    focusInput() {
+      // ref를 사용하여 input 요소에 접근
+      this.$nextTick(() => {
+        if (this.$refs.tickerInput) {
+          this.$refs.tickerInput.focus();
+        }
+      });
     }
   },
   watch: {
-    // 모달이 열릴 때마다 검색 상태 초기화
     isOpen(newVal) {
       if (newVal) {
-        this.resetState();
+        this.tickerCode = ''; // 모달이 열릴 때마다 입력값 초기화
+        this.focusInput(); // 모달이 열리면 자동으로 input에 포커스
       }
     }
   }
@@ -203,7 +161,7 @@ export default {
  * 3. 검색 입력 및 버튼
  * =======================================================
  */
-.search-container {
+.input-container {
   display: flex;
   width: 80%;
   border: 1px solid #504a3d;
@@ -230,35 +188,11 @@ export default {
   opacity: 1; /* 일부 브라우저에서 투명도가 적용되는 것을 방지 */
 }
 
-/* 검색 버튼 (돋보기 배경) 수정 */
-.search-btn {
-  /* 현재 흰색 배경으로 보이는 돋보기를 테마색으로 변경 */
-  background-color: #ECB20F; /* 어두운 갈색/회색 계열 */
-  border: none;
-  padding: 8px 15px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.search-btn:hover {
-  background-color: #635b4a; /* 마우스 오버 시 약간 밝게 */
-}
-
-.search-icon {
-  font-size: 14px;
-}
-
 /*
  * =======================================================
  * 4. 결과 및 추가 버튼
  * =======================================================
  */
-.result-display {
-  text-align: center;
-  font-size: 15px;
-  color: #a0a0a0;
-  padding: 5px 0;
-}
 
 .warning-text {
   color: #ff8a80;

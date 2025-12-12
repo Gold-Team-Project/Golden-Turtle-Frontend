@@ -55,109 +55,77 @@
 </template>
 
 <script setup>
-
 import { ref, computed } from 'vue';
-
-
+import { useTradeStore } from '@/stores/trade'; // tradeStore 임포트
+import { useAccountStore } from '@/stores/Account';
 
 const props = defineProps({
-
   currentPrice: {
-
     type: Number,
-
     required: true,
-
     default: 0
-
   },
-
   stockSymbol: {
-
     type: String,
-
     required: false
-
   }
-
 });
 
-
+const tradeStore = useTradeStore(); // tradeStore 사용
+const accountStore = useAccountStore(); // accountStore 사용
 
 const currentMode = ref('매수'); // '매수' 또는 '매도'
-
 const orderQuantity = ref(0); // 주문 수량
 
-
-
 const calculatedAmount = computed(() => {
-
   const quantity = parseFloat(orderQuantity.value) || 0;
-
-  // props로 받은 currentPrice 사용
-
   return quantity * props.currentPrice;
-
 });
-
-
 
 const formattedAmount = computed(() => {
-
-  return calculatedAmount.value.toFixed(2).toLocaleString();
-
+  // toLocaleString()이 숫자에만 적용되도록 수정
+  return calculatedAmount.value.toFixed(2).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 });
 
-
-
 function changeMode(mode) {
-
   currentMode.value = mode;
-
 }
 
-
-
-function submitOrder() {
-
+async function submitOrder() {
   if (orderQuantity.value <= 0) {
-
     alert('주문 수량은 0보다 커야 합니다.');
-
     return;
-
+  }
+  if (!props.stockSymbol) {
+    alert('종목을 선택해주세요.');
+    return;
   }
 
+  const ticker = props.stockSymbol;
+  const quantity = orderQuantity.value;
 
+  try {
+    let success = false;
+    if (currentMode.value === '매수') {
+      success = await tradeStore.buyStock(ticker, quantity);
+    } else { // 매도
+      success = await tradeStore.sellStock(ticker, quantity);
+    }
 
-  const orderDetails = {
-
-    mode: currentMode.value,
-
-    type: '시장가',
-
-    quantity: orderQuantity.value,
-
-    pricePerUnit: props.currentPrice, // props로 받은 currentPrice 사용
-
-    totalAmount: calculatedAmount.value,
-
-    stockSymbol: props.stockSymbol // props로 받은 stockSymbol 사용
-
-  };
-
-
-
-  console.log('--- 주문 제출 ---');
-
-  console.log(orderDetails);
-
-  alert(`${currentMode.value} 주문이 접수되었습니다.\n총 금액: ${formattedAmount.value}`);
-
-  orderQuantity.value = 0;
-
+    if (success) {
+      alert(`${currentMode.value} 주문이 성공적으로 접수되었습니다.\n${ticker} ${quantity}개, 총 금액: ${formattedAmount.value}`);
+      orderQuantity.value = 0; // 주문 성공 후 수량 초기화
+      accountStore.loadCashBalance(); // 잔고 업데이트
+    } else {
+      // tradeStore.buyStock/sellStock에서 이미 에러를 throw하므로 여기에 도달하지 않음
+      // 하지만 혹시 모를 경우를 대비
+      alert(`${currentMode.value} 주문 실패: 알 수 없는 오류`);
+    }
+  } catch (error) {
+    console.error('주문 제출 중 오류 발생:', error);
+    alert(`${currentMode.value} 주문 실패: ${error.message || '서버 오류'}`);
+  }
 }
-
 </script>
 
 <style scoped>

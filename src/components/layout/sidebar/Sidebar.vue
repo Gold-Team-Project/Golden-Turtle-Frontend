@@ -151,7 +151,9 @@ const startGame = async () => {
   } catch (e) {
     console.error("게임 시작 실패", e);
   }
-};const endGame = async () => {
+};
+
+const endGame = async () => {
   try {
     const res = await api.post(`/api/v1/game-session/end`);
     emit("open-modal", res.data.data);
@@ -177,19 +179,11 @@ const loadPage = () => {
   accountStore.loadCashBalance()
 }
 
-onMounted(() => {
-  loadPage()
-})
-
 // Mock 화면용 데이터
-// ===== 보유 현황 더미 =====
-const holdings = ref([
-  { id: 1, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
-  { id: 2, name: "엔비디아", ticker: "NVDA", quantity: 20, avgPrice: "172.80" },
-]);
 
 // ===== 새로고침 시 타이머 복구 =====
 onMounted(() => {
+  loadPage()
   // ⭐ 저장된 세션ID 불러오기
   const savedSessionId = localStorage.getItem("gameSessionId");
   if (savedSessionId) {

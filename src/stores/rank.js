@@ -58,7 +58,7 @@ export const useRankStore = defineStore("rank", () => {
     // STOMP 연결
     const connectStomp = (sessionId) => {
         mySessionId.value = sessionId;
-        console.log("🔑 [RANK] 내 식별 세션 ID:", mySessionId.value);
+        console.log(":key: [RANK] 내 식별 세션 ID:", mySessionId.value);
 
         if (stompClient) {
             stompClient.deactivate();
@@ -106,7 +106,7 @@ export const useRankStore = defineStore("rank", () => {
             console.log(`[RANK] 초기 랭킹 로드 완료 (${ranking.value.length}명)`);
 
         } catch (e) {
-            console.error("❌ [RANK] 초기 랭킹 조회 실패:", e);
+            console.error(":x: [RANK] 초기 랭킹 조회 실패:", e);
         }
     };
 
