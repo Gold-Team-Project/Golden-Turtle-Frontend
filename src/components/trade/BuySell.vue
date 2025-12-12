@@ -57,6 +57,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useTradeStore } from '@/stores/trade'; // tradeStore 임포트
+import { useAccountStore } from '@/stores/Account';
 
 const props = defineProps({
   currentPrice: {
@@ -71,6 +72,7 @@ const props = defineProps({
 });
 
 const tradeStore = useTradeStore(); // tradeStore 사용
+const accountStore = useAccountStore(); // accountStore 사용
 
 const currentMode = ref('매수'); // '매수' 또는 '매도'
 const orderQuantity = ref(0); // 주문 수량
@@ -113,6 +115,7 @@ async function submitOrder() {
     if (success) {
       alert(`${currentMode.value} 주문이 성공적으로 접수되었습니다.\n${ticker} ${quantity}개, 총 금액: ${formattedAmount.value}`);
       orderQuantity.value = 0; // 주문 성공 후 수량 초기화
+      accountStore.loadCashBalance(); // 잔고 업데이트
     } else {
       // tradeStore.buyStock/sellStock에서 이미 에러를 throw하므로 여기에 도달하지 않음
       // 하지만 혹시 모를 경우를 대비

@@ -51,7 +51,7 @@ export const useAccountStore = defineStore('account', () => {
     const loadCashBalance = async () => {
         try {
             const data = await fetchCashBalanceByUserId()
-            cashBalance.value = data ?? 1
+            cashBalance.value = data ?? 0
             console.log(cashBalance.value)
         } catch (error) {
             console.error('거래내역을 불러올 수 없습니다:', error)
