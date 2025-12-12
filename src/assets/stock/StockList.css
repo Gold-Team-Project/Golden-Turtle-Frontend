@@ -62,3 +62,21 @@
 .negative-change {
     color: #f56565;
 }
+
+.inactive-row {
+  background-color: #2a2a2a; /* Slightly darker background for inactive rows */
+  opacity: 0.7; /* Reduce opacity to make it look dimmer */
+}
+
+.inactive-row:hover {
+  background-color: #2a2a2a; /* Keep the same darker background on hover */
+  cursor: not-allowed; /* Change cursor to indicate it's not interactive */
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: #3a3f44; /* Standard hover background color */
+}

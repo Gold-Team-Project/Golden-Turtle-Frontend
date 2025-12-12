@@ -11,7 +11,7 @@
     <nav class="gt-nav">
       <a href="/mypage">Mypage</a>
       <a @click="goHistory" href="#">History</a>
-      <a href="/market">Market</a>
+      <router-link to="/stocklist">Market</router-link>
       <a href="/Portfolio">Portfolio</a>
       <!-- Modified logout link to trigger handleLogout function -->
       <a @click.prevent="handleLogout" href="#">Logout</a>

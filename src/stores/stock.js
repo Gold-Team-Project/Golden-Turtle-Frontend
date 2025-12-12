@@ -14,11 +14,11 @@ export const useStockStore = defineStore('stock', () => {
 
   const connect = () => {
     const authStore = useAuthStore();
-    if (!authStore.accessToken) {
-        console.error("[STOMP] 주식 소켓 연결 실패: 인증 토큰이 없습니다.");
-        // TODO: 로그인 페이지로 리다이렉트하거나 사용자에게 로그인 요청 (Vue Router가 필요)
-        return;
-    }
+    // if (!authStore.accessToken) {
+    //     console.error("[STOMP] 주식 소켓 연결 실패: 인증 토큰이 없습니다.");
+    //     // TODO: 로그인 페이지로 리다이렉트하거나 사용자에게 로그인 요청 (Vue Router가 필요)
+    //     return;
+    // }
 
     if (stompClient?.active) {
       console.log('STOMP client is already active.')
