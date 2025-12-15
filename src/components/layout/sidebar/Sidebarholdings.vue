@@ -1,19 +1,19 @@
   <!-- src/components/SidebarHoldings.vue -->
   <script setup>
-  import { onMounted } from 'vue';
-  import { useTradeStore } from '@/stores/trade.js';
-  import { storeToRefs } from 'pinia';
+  import { computed, onMounted } from 'vue'
+  import { useTradeStore } from '@/stores/trade.js'
+  import { storeToRefs } from 'pinia'
 
-  const tradeStore = useTradeStore();
-  const { userHoldings: holdings } = storeToRefs(tradeStore); // Rename for template compatibility
+  const tradeStore = useTradeStore()
+  const { userHoldings } = storeToRefs(tradeStore)
+
+  const visibleHoldings = computed(() =>
+      userHoldings.value.filter(h => h.quantity > 0)
+  )
 
   onMounted(() => {
-    // Data is now loaded by StockDetailView or a parent component
-    // This component will just reactively display it.
-    // If no game is active, fetchHoldings won't run, and holdings will be empty.
-    // We can still call it here as a fallback if needed.
-    tradeStore.fetchHoldings();
-  });
+    tradeStore.fetchHoldings()
+  })
   </script>
 
   <template>
@@ -28,9 +28,9 @@
       </div>
 
       <!-- 리스트 -->
-      <div v-if="holdings.length" class="holding-list">
+      <div v-if="visibleHoldings.length" class="holding-list">
         <div
-            v-for="item in holdings"
+            v-for="item in visibleHoldings"
             :key="item.holdingId"
             class="holding-row"
         >
