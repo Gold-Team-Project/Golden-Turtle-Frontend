@@ -328,8 +328,6 @@ GUMMA PPT 바로가기 [여기](https://gamma.app/docs/-cqgiskvr2jkfztx)에서 �
 <img width="1221" height="632" alt="image" src="https://github.com/user-attachments/assets/d29da93d-bbe5-42d7-8ac8-f7e57ad241d6" />
 
 
-🚩 젠킨스 파이프라인 파일 스크립트 코드
-
 📱 CI/CD 테스트
 
 ## ⚠️ **8. 트러블 슈팅**
