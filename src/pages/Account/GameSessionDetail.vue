@@ -35,15 +35,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 🔥 바깥 섹션 프레임 -->
   <div class="gt-box">
 
-    <!-- 🔥 Trade 타이틀 -->
     <div class="page-header">
       <h1 class="page-title">Trade</h1>
     </div>
 
-    <!-- 🔥 내부 컨텐츠 카드 -->
     <div class="gt-box">
       <div class="stock-list-container">
         <table class="stock-table">

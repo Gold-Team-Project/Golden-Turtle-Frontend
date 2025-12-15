@@ -60,10 +60,7 @@ const ranking = ref([])
 const rowsPerPage = 7
 const currentPage = ref(1)
 
-/**
- * ⚠️ 서버에서 totalPages를 내려주지 않으므로
- * 임시로 고정값 사용 (백엔드 수정 전까지)
- */
+
 const totalPages = ref(10)
 
 /* 숫자 포맷 */

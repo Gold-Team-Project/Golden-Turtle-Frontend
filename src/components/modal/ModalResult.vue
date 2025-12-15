@@ -21,7 +21,6 @@
         </div>
       </div>
 
-      <!-- 🔥 3초 카운트다운 안내 -->
       <p class="auto-close-text">
         {{ countdown }}초 후 메인 화면으로 이동합니다…
       </p>
@@ -39,7 +38,6 @@ const format = (num) => {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// 🔥 카운트다운
 const countdown = ref(3);
 let interval = null;
 

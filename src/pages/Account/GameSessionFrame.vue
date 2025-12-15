@@ -31,15 +31,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 🔥 Market과 동일한 “바깥 프레임” -->
   <div class="gt-box">
 
-    <!-- 🔥 섹션 타이틀 (Market과 동일 위치/여백) -->
     <div class="page-header">
       <h1 class="page-title">GameSession</h1>
     </div>
 
-    <!-- 🔥 Market과 동일한 “안쪽 컨텐츠 카드” -->
     <div class="gt-box">
 
       <div class="stock-list-container">

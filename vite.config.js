@@ -19,7 +19,7 @@ export default defineConfig({
         'global': 'window',
     },
     server: {
-        host: '0.0.0.0',
+        // host: '0.0.0.0',
         port: 5173,
         //vue router history 모드 지원
         /*http://localhost:5173/oauth/callback?token=xxx 이러한 경로로 접근할 때

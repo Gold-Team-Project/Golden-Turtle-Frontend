@@ -26,15 +26,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 🔥 Market / GameSession과 동일한 구조 -->
   <div class="gt-box">
 
-    <!-- 🔥 Portfolio 타이틀 -->
     <div class="page-header">
       <h1 class="page-title">Portfolio</h1>
     </div>
 
-    <!-- 🔥 내부 컨텐츠 카드 -->
     <div class="gt-box">
       <div class="stock-list-container">
         <table class="stock-table">
