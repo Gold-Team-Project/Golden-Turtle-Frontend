@@ -40,12 +40,13 @@ export const useAccountStore = defineStore('account', () => {
     const loadHoldings = async (newPage = 1) => {
         try {
             const data = await fetchHoldingsByUserId(newPage)
-            holdings.value = data.holdings ?? []
+            holdings.value = (data.holdings ?? []).filter(h => h.quantity > 0)
             totalPages.value = data.pagination?.totalPages ?? 1
             page.value = data.pagination?.currentPage ?? newPage
             console.log(holdings.value)
         } catch (error) {
             console.error('거래내역을 불러올 수 없습니다:', error)
+
         }
     }
 

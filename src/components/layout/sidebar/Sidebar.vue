@@ -92,7 +92,8 @@ import CommonButton from "@/components/common/button/CommonButton.vue"
 import Sidebarholdings from "@/components/layout/sidebar/Sidebarholdings.vue"
 import "@/assets/sidebar/Sidebar.css"
 import api from "@/api/axios";
-
+import { useRouter } from "vue-router";
+const router = useRouter();
 const emit = defineEmits(["open-modal"])
 const isGameActive = ref(false)
 const accountStore = useAccountStore()
@@ -136,7 +137,6 @@ const startGame = async () => {
     const res = await api.post(`/api/v1/game-session/start`);
     sessionId.value = res.data.data;
 
-    // ⭐ 세션ID 저장
     localStorage.setItem("gameSessionId", sessionId.value.toString());
 
     isGameActive.value = true;
@@ -144,6 +144,9 @@ const startGame = async () => {
     timer.value = formatTime(600);
 
     localStorage.setItem("gameStartTime", Date.now().toString());
+    setTimeout(() => {
+      window.location.href = "/stocklist";
+    }, );
 
     startCountdown();
     rankStore.connectStomp(sessionId.value); // STOMP 연결
@@ -165,9 +168,12 @@ const endGame = async () => {
     timer.value = formatTime(600);
     isGameActive.value = false;
 
-    // ⭐ 저장된 세션ID 제거
     localStorage.removeItem("gameSessionId");
     localStorage.removeItem("gameStartTime");
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 3000);
 
   } catch (e) {
     console.error("게임 종료 실패", e);
@@ -185,16 +191,13 @@ const loadPage = () => {
 // ===== 새로고침 시 타이머 복구 =====
 onMounted(() => {
   loadPage()
-  // ⭐ 저장된 세션ID 불러오기
   const savedSessionId = localStorage.getItem("gameSessionId");
   if (savedSessionId) {
     sessionId.value = Number(savedSessionId);
 
-    // ⭐ STOMP 자동 재연결 → 실시간 순위 유지
     rankStore.connectStomp(sessionId.value);
   }
 
-  // ⭐ 타이머 복구
   const saved = localStorage.getItem("gameStartTime");
   if (saved) {
     const elapsed = Math.floor((Date.now() - Number(saved)) / 1000);

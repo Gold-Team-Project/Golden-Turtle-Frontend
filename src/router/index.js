@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
-import GameSessionParent from "@/pages/Account/GameSessionParent.vue";
+import GameSessionFrame from "@/pages/Account/GameSessionFrame.vue";
 import GameSessionDetail from "@/pages/Account/GameSessionDetail.vue";
 import MainLayout from '@/layouts/MainLayout.vue';
 import MainContent from '@/views/main/MainContent.vue';
@@ -58,7 +58,7 @@ const routes = [
             {
                 path: 'gamesession',
                 name: 'gamesession',
-                component: GameSessionParent
+                component: GameSessionFrame
             },
             {
                 path: 'gamesession/:sessionId/detail',

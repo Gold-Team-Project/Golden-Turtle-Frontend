@@ -80,3 +80,14 @@
 .clickable-row:hover {
   background-color: #3a3f44; /* Standard hover background color */
 }
+/* ===== Page Header (Market 스타일) ===== */
+.page-header {
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #f5c84c;   /* Market과 동일한 골드 포인트 */
+    letter-spacing: -0.5px;
+}
