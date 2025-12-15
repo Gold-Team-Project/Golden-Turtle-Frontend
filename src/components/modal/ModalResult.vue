@@ -20,17 +20,42 @@
           <span>{{ result.totalReturn }}%</span>
         </div>
       </div>
+
+      <!-- 🔥 3초 카운트다운 안내 -->
+      <p class="auto-close-text">
+        {{ countdown }}초 후 메인 화면으로 이동합니다…
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({ result: Object })
+import { ref, onMounted, onUnmounted } from "vue";
+
+const props = defineProps({ result: Object });
 
 const format = (num) => {
-  if (!num) return "0"
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-}
+  if (!num) return "0";
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+// 🔥 카운트다운
+const countdown = ref(3);
+let interval = null;
+
+onMounted(() => {
+  interval = setInterval(() => {
+    if (countdown.value > 1) {
+      countdown.value--;
+    } else {
+      clearInterval(interval);
+    }
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(interval);
+});
 </script>
 
 <style scoped>
@@ -87,5 +112,14 @@ const format = (num) => {
 
 .table-header {
   background: rgba(255, 215, 0, 0.15);
+}
+
+/* 🔥 자동 이동 안내 문구 */
+.auto-close-text {
+  margin-top: 20px;
+  text-align: center;
+  color: #f6c749;
+  font-size: 14px;
+  opacity: 0.9;
 }
 </style>

@@ -18,12 +18,13 @@ import StockListComponent from '@/components/stock/StockListComponent.vue';
 }
 
 .main-title {
-    font-size: 64px;
-    font-weight: 900;
-    line-height: 1.1;
-    margin-bottom: 25px;
-    color: #f6c749;
-    text-align: left; /* Center the title */
-    margin-top: -10px; /* Add some space from the top */
+  font-size: 36px;      /* 🔥 GameSession과 동일 */
+  font-weight: 800;     /* 🔥 동일 */
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #f6c749;
+  text-align: left;
+  margin-top: 0;
 }
+
 </style>

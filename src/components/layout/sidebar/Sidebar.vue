@@ -92,7 +92,8 @@ import CommonButton from "@/components/common/button/CommonButton.vue"
 import Sidebarholdings from "@/components/layout/sidebar/Sidebarholdings.vue"
 import "@/assets/sidebar/Sidebar.css"
 import api from "@/api/axios";
-
+import { useRouter } from "vue-router";
+const router = useRouter();
 const emit = defineEmits(["open-modal"])
 const isGameActive = ref(false)
 const accountStore = useAccountStore()
@@ -144,6 +145,9 @@ const startGame = async () => {
     timer.value = formatTime(600);
 
     localStorage.setItem("gameStartTime", Date.now().toString());
+    setTimeout(() => {
+      window.location.href = "/stocklist";
+    }, );
 
     startCountdown();
     rankStore.connectStomp(sessionId.value); // STOMP 연결
@@ -168,6 +172,10 @@ const endGame = async () => {
     // ⭐ 저장된 세션ID 제거
     localStorage.removeItem("gameSessionId");
     localStorage.removeItem("gameStartTime");
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 3000);
 
   } catch (e) {
     console.error("게임 종료 실패", e);
