@@ -26,11 +26,11 @@
 
       <p class="section-title-bold">잔고</p>
       <div class="card-panel balance-panel">
-        {{cashBalance}}$
+        {{ cashBalance }}$
       </div>
     </div>
     <p class="section-title-bold">보유 현황</p>
-    <Sidebarholdings />
+    <Sidebarholdings/>
 
 
     <!-- 현재 순위 -->
@@ -47,11 +47,12 @@
           <div
               class="rank-item"
               :class="{
-                'rank-low': rankItem.rank > 3,
-                [rankStore.rankAnimation]:
-                  rankStore.mySessionId &&
-                  rankItem.sessionId === rankStore.mySessionId
-              }"
+          'rank-low': rankItem.rank > 3,
+    'rank-me': rankItem.sessionId === rankStore.mySessionId,
+    [rankStore.rankAnimation]:
+      rankStore.mySessionId &&
+      rankItem.sessionId === rankStore.mySessionId
+  }"
           >
             <div class="rank-left-col">
               <span v-if="rankItem.rank === 1">🥇</span>
@@ -86,20 +87,21 @@
 <script setup>
 import "@/assets/sidebar/Sidebar.css";
 import {onMounted, ref} from "vue"
-import { useAccountStore } from '@/stores/Account.js'
-import { storeToRefs } from 'pinia'
+import {useAccountStore} from '@/stores/Account.js'
+import {storeToRefs} from 'pinia'
 import CommonButton from "@/components/common/button/CommonButton.vue"
 import Sidebarholdings from "@/components/layout/sidebar/Sidebarholdings.vue"
 import "@/assets/sidebar/Sidebar.css"
 import api from "@/api/axios";
-import { useRouter } from "vue-router";
+import {useRouter} from "vue-router";
+
 const router = useRouter();
 const emit = defineEmits(["open-modal"])
 const isGameActive = ref(false)
 const accountStore = useAccountStore()
 // ========= TIMER ==========
 const totalSeconds = ref(600); // 10분 = 600초
-import { useRankStore } from "@/stores/rank.js";
+import {useRankStore} from "@/stores/rank.js";
 
 const rankStore = useRankStore();
 
@@ -113,7 +115,7 @@ const formatNumber = (n) =>
 const timer = ref("00 : 10 : 00");
 let timerInterval = null;
 
-const { cashBalance} = storeToRefs(accountStore)
+const {cashBalance} = storeToRefs(accountStore)
 
 const formatTime = (sec) =>
     `${String(Math.floor(sec / 3600)).padStart(2, "0")} : ` +
@@ -146,7 +148,7 @@ const startGame = async () => {
     localStorage.setItem("gameStartTime", Date.now().toString());
     setTimeout(() => {
       window.location.href = "/stocklist";
-    }, );
+    },);
 
     startCountdown();
     rankStore.connectStomp(sessionId.value); // STOMP 연결

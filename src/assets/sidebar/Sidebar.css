@@ -106,17 +106,6 @@
     box-shadow:
             inset 0 0 8px rgba(0,0,0,0.55),
             0 0 0 2px rgba(80,74,61,0.7);
-    scrollbar-width: thin;
-    scrollbar-color: #c2a559 rgba(255,255,255,0.05);
-}
-
-.holding-panel::-webkit-scrollbar {
-    width: 6px;
-}
-
-.holding-panel::-webkit-scrollbar-thumb {
-    background: #b89a55;
-    border-radius: 6px;
 }
 
 .holding-header,
@@ -124,9 +113,6 @@
     display: grid;
     grid-template-columns: 1.1fr 0.9fr 1fr;
     align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .holding-header {
@@ -146,7 +132,7 @@
 }
 
 /* ===========================
-   RANKING PANEL (NEW)
+   RANKING PANEL
 =========================== */
 .ranking-panel {
     background: #3a3528;
@@ -156,8 +142,6 @@
     box-shadow:
             inset 0 0 8px rgba(0,0,0,0.55),
             0 0 0 2px rgba(80,74,61,0.7);
-    height: auto;
-    /* 내용이 많으면 스크롤 없이 늘어나도록 설정됨. 필요시 max-height 추가 */
 }
 
 .rank-item {
@@ -165,9 +149,9 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
-    padding: 2px 4px; /* 가독성 확보 */
-    border-radius: 4px; /* 애니메이션 시 배경 효과 이쁘게 */
-    transition: all 0.25s ease-out;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
 }
 
 .rank-left-col {
@@ -175,38 +159,15 @@
     align-items: center;
 }
 
-.rank-low {
-    opacity: 0.85; /* 가독성을 위해 투명도 조절 */
-}
-
-/* 구분선 (•••) */
-.rank-dots {
-    text-align: center;
-    opacity: 0.6;
-    margin: 4px 0;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-/* 4등 이하 숫자 스타일 */
 .rank-number {
-    display: inline-block;
-    width: 32px; /* 숫자 자리 확보 */
+    width: 32px;
     font-weight: bold;
-    color: #e8c96d; /* 골드 느낌 */
+    color: #e8c96d;
 }
 
 .rank-nickname {
     margin-left: 4px;
     color: #fff;
-}
-
-/* (나) 배지 */
-.me-badge {
-    font-size: 0.85em;
-    color: #4caf50; /* 초록색 */
-    margin-left: 4px;
-    font-weight: 800;
 }
 
 .rank-money {
@@ -215,40 +176,94 @@
 }
 
 /* ===========================
-   실시간 랭킹 애니메이션
+   내 세션 기본 강조
 =========================== */
-
-/* 순위 상승: 초록빛 Glow + 배경 반짝임 */
-.rank-up-animation {
-    animation: rankUpEffect 1s ease-out;
-    background-color: rgba(43, 180, 74, 0.1); /* 배경색 살짝 */
+.rank-me .rank-nickname {
+    color: #ffd966;
+    font-weight: 800;
 }
 
-@keyframes rankUpEffect {
-    0% { box-shadow: 0 0 0px rgba(0, 255, 149, 0.0); }
-    30% { box-shadow: 0 0 14px rgba(0, 255, 149, 0.8); transform: scale(1.02); }
-    100% { box-shadow: 0 0 0px rgba(0, 255, 149, 0.0); transform: scale(1); }
-}
-
-/* 순위 하락: 좌우 흔들림 + 붉은 배경 살짝 */
-.rank-down-animation {
-    animation: rankDownEffect 0.6s ease-out;
-    background-color: rgba(214, 62, 62, 0.1);
-}
-
-@keyframes rankDownEffect {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    50% { transform: translateX(4px); }
-    75% { transform: translateX(-4px); }
-    100% { transform: translateX(0); }
+.rank-me .rank-money {
+    color: #ffe28a;
+    font-weight: 700;
 }
 
 /* ===========================
-   CARD PANELS (공통)
+   실시간 랭킹 애니메이션 (개선)
 =========================== */
-.timer-panel,
-.balance-panel {
+
+/* 🔼 순위 상승 */
+.rank-up-animation {
+    animation:
+            rankUpMove 0.6s ease-out,
+            rankUpGlow 1.4s ease-in-out;
+    background-color: rgba(43, 180, 74, 0.12);
+}
+
+@keyframes rankUpMove {
+    0% {
+        transform: translateY(6px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes rankUpGlow {
+    0% {
+        box-shadow: 0 0 0 rgba(0, 255, 149, 0);
+    }
+    40% {
+        box-shadow: 0 0 16px rgba(0, 255, 149, 0.85);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(0, 255, 149, 0);
+    }
+}
+
+/* 🔽 순위 하락 */
+.rank-down-animation {
+    animation:
+            rankDownMove 0.7s ease-in-out,
+            rankDownGlow 1.3s ease-out;
+    background-color: rgba(214, 62, 62, 0.12);
+}
+
+@keyframes rankDownMove {
+    0% {
+        transform: translateY(-4px);
+    }
+    60% {
+        transform: translateY(2px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes rankDownGlow {
+    0% {
+        box-shadow: 0 0 0 rgba(214, 62, 62, 0);
+    }
+    40% {
+        box-shadow: 0 0 12px rgba(214, 62, 62, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(214, 62, 62, 0);
+    }
+}
+
+/* 애니메이션 중 글씨 색상 */
+.rank-me.rank-up-animation .rank-nickname,
+.rank-me.rank-up-animation .rank-money {
+    color: #2ecc71;
+}
+
+.rank-me.rank-down-animation .rank-nickname,
+.rank-me.rank-down-animation .rank-money {
+    color: #e74c3c;
+}
+.card-panel {
     background: #3a3528;
     border-radius: 12px;
     padding: 12px;
@@ -256,8 +271,4 @@
     box-shadow:
             inset 0 0 8px rgba(0,0,0,0.55),
             0 0 0 2px rgba(80,74,61,0.7);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
 }

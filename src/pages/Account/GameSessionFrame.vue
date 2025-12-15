@@ -15,7 +15,9 @@ const formatMoney = (v) =>
     v == null ? '-' : Number(v).toLocaleString()
 
 const formatPercent = (v) =>
-    v == null ? '-' : `${(Number(v) * 100).toFixed(0)}%`
+    v == null ? '-' : `${Number(v).toFixed(2)}%`
+
+
 
 const loadPage = (p = 1) => {
   accountStore.loadSessions(p)
