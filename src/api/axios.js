@@ -53,8 +53,8 @@ api.interceptors.response.use(
         const originalRequest = error.config;
         const authStore = useAuthStore();
 
-        // 401 에러이고, 재시도한 요청이 아닐 경우
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // 401 또는 403 에러이고, 재시도한 요청이 아닐 경우
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
             
             // 로그인/리프레시 요청 자체에서 401이 발생한 경우는 재발급 로직을 타지 않음
             if (originalRequest.url.includes('/api/v1/auth/login') || originalRequest.url.includes('/api/v1/auth/refresh')) {
@@ -75,22 +75,26 @@ api.interceptors.response.use(
 
             originalRequest._retry = true;
             isRefreshing = true;
+            console.log("Token refresh initiated..."); // Log refresh initiation
 
             try {
                 // 토큰 재발급 시도
                 const newAccessToken = await authStore.refreshTokens();
+                console.log("Token refresh successful. New access token (first 10 chars):", newAccessToken.substring(0, 10) + '...'); // Log success
                 // 재발급 성공 시, 실패했던 모든 요청 재실행
                 processQueue(null, newAccessToken);
                 // 현재 실패한 원래 요청도 재실행
                 originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
+                console.error("Token refresh failed:", refreshError); // Log failure
                 // 재발급 실패 시, 큐에 있던 모든 요청 실패 처리 및 로그아웃
                 processQueue(refreshError, null);
                 authStore.logout();
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
+                console.log("Token refresh process finished."); // Log process conclusion
             }
         }
 
